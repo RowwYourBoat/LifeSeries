@@ -11,9 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DoubleLifeConfig extends ConfigManager {
-
-    private final SecretLifeConfig secretLifeConfig = new SecretLifeConfig();
-
     public static final List<String> BLACKLISTED_ITEMS = List.of(
             "lectern",
             "bookshelf",
@@ -114,8 +111,8 @@ public class DoubleLifeConfig extends ConfigManager {
             "More Soulbind Options", ""
     );
 
-    public DoubleLifeConfig() {
-        super("./config/"+ Main.MOD_ID,"doublelife.properties");
+    public DoubleLifeConfig(SecretLifeConfig secretLifeConfig) {
+        super("./config/"+ Main.MOD_ID,"doublelife.properties", secretLifeConfig);
     }
 
     @Override
@@ -150,7 +147,7 @@ public class DoubleLifeConfig extends ConfigManager {
         BLACKLIST_BLOCKS.defaultValue = TextUtils.formatString("[{}]", BLACKLISTED_BLOCKS);
         BLACKLIST_CLAMPED_ENCHANTS.defaultValue = TextUtils.formatString("[{}]", CLAMPED_ENCHANTMENTS);
 
-        this.secretLifeConfig.instantiateProperties();
+        this.secretLifeConfig.instantiateProperties(this);
 
         super.instantiateProperties();
     }

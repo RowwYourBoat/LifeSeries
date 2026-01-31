@@ -6,7 +6,6 @@ import net.mat0u5.lifeseries.seasons.boogeyman.BoogeymanManager;
 import net.mat0u5.lifeseries.seasons.season.Season;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLife;
-import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeCommands;
 import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeConfig;
 import net.mat0u5.lifeseries.seasons.season.secretlife.TaskManager;
 import net.mat0u5.lifeseries.seasons.session.SessionAction;
@@ -66,12 +65,16 @@ public class DoubleLife extends Season {
         }
     };
 
-    private final SecretLife secretLife = new SecretLife();
-
     public Map<UUID, UUID> soulmates = new TreeMap<>();
     public Map<UUID, UUID> soulmatesOrdered = new TreeMap<>();
     public static Map<UUID, UUID> soulmatesForce = new HashMap<>();
     public static Map<UUID, UUID> soulmatesPrevent = new HashMap<>();
+
+    private final SecretLife secretLife;
+
+    public DoubleLife(SecretLife secretLife) {
+        this.secretLife = secretLife;
+    }
 
     @Override
     public void initialize() {
@@ -92,8 +95,10 @@ public class DoubleLife extends Season {
     @Override
     public ConfigManager createConfig() {
         getSoulmateConfig();
-        this.secretLife.initialize();
-        return new DoubleLifeConfig();
+        TaskManager.initialize();
+        return new DoubleLifeConfig(
+            new SecretLifeConfig()
+        );
     }
 
     @Override

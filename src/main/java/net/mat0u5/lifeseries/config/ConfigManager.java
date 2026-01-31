@@ -4,7 +4,7 @@ import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
 import net.mat0u5.lifeseries.network.packets.ConfigPayload;
 import net.mat0u5.lifeseries.seasons.other.LivesManager;
-import net.mat0u5.lifeseries.seasons.season.Seasons;
+import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeConfig;
 import net.mat0u5.lifeseries.utils.enums.ConfigTypes;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
 import net.mat0u5.lifeseries.utils.player.ScoreboardUtils;
@@ -12,9 +12,8 @@ import net.mat0u5.lifeseries.utils.world.DatapackIntegration;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.border.BorderStatus;
+import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Score;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -22,8 +21,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
-//? if > 1.20.2
-import net.minecraft.world.scores.PlayerScoreEntry;
 
 public abstract class ConfigManager extends DefaultConfigValues {
 
@@ -31,9 +28,21 @@ public abstract class ConfigManager extends DefaultConfigValues {
     protected String folderPath;
     protected String filePath;
 
+    protected SecretLifeConfig secretLifeConfig;
+
     protected ConfigManager(String folderPath, String filePath) {
         this.folderPath = folderPath;
         this.filePath = folderPath + "/" + filePath;
+        createFileIfNotExists();
+        loadProperties();
+        renamedProperties();
+        instantiateProperties();
+    }
+
+    protected ConfigManager(String folderPath, String filePath, SecretLifeConfig secretLifeConfig) {
+        this.folderPath = folderPath;
+        this.filePath = folderPath + "/" + filePath;
+        this.secretLifeConfig = secretLifeConfig;
         createFileIfNotExists();
         loadProperties();
         renamedProperties();

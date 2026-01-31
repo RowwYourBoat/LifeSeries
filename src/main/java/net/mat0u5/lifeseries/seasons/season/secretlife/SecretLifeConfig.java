@@ -3,6 +3,7 @@ package net.mat0u5.lifeseries.seasons.season.secretlife;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigFileEntry;
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.seasons.season.doublelife.DoubleLifeConfig;
 import net.mat0u5.lifeseries.utils.enums.ConfigTypes;
 
 import java.util.ArrayList;
@@ -101,10 +102,9 @@ public class SecretLifeConfig extends ConfigManager {
         ));
     }
 
-    @Override
-    public void instantiateProperties() {
-        MAX_PLAYER_HEALTH.defaultValue = 60;
-        SPAWN_EGG_ALLOW_ON_SPAWNER.defaultValue = true;
-        SPAWNER_RECIPE.defaultValue = true;
+    public void instantiateProperties(DoubleLifeConfig config) {
+        config.MAX_PLAYER_HEALTH.defaultValue = 60;
+        config.SPAWN_EGG_ALLOW_ON_SPAWNER.defaultValue = true;
+        config.SPAWNER_RECIPE.defaultValue = true;
     }
 }

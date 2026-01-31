@@ -237,6 +237,7 @@ public class LifeSeriesCommand extends Command {
         OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("§7The Life Series was originally created by §fGrian§7" +
                 ", and this mod, created by §fMat0u5§7, aims to recreate every single season one-to-one."));
         OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("§7This mod uses sounds created by §fOli (TheOrionSound)§7, and uses recreated snail model (first created by §fDanny§7), and a recreated trivia bot model (first created by §fHoffen§7)."));
+        OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("§7Custom functionality added by §fRowwYourBoat (Rowan)§7."));
         return 1;
     }
 }

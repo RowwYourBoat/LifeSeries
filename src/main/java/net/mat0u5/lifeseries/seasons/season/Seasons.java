@@ -56,7 +56,11 @@ public enum Seasons {
     public Season getSeasonInstance() {
         if (this == THIRD_LIFE) return new ThirdLife();
         if (this == LAST_LIFE) return new LastLife();
-        if (this == DOUBLE_LIFE) return new DoubleLife();
+        if (this == DOUBLE_LIFE) {
+            return new DoubleLife(
+                new SecretLife()
+            );
+        }
         if (this == LIMITED_LIFE) return new LimitedLife();
         if (this == SECRET_LIFE) return new SecretLife();
         if (this == WILD_LIFE) return new WildLife();
@@ -94,6 +98,7 @@ public enum Seasons {
     public static List<Seasons> getSeasons() {
         List<Seasons> allSeasons = new ArrayList<>(List.of(Seasons.values()));
         allSeasons.remove(UNASSIGNED);
+        allSeasons.remove(SECRET_LIFE);
         return allSeasons;
     }
 
