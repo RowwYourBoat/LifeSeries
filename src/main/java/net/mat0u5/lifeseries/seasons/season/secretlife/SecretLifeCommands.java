@@ -31,7 +31,7 @@ public class SecretLifeCommands extends Command {
 
     @Override
     public boolean isAllowed() {
-        return currentSeason.getSeason() == Seasons.SECRET_LIFE;
+        return currentSeason.getSeason() == Seasons.DOUBLE_LIFE;
     }
 
     @Override

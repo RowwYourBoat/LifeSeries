@@ -74,7 +74,7 @@ public class GuiMixin {
         if (!MainClient.COLORED_HEARTS || playerTeam == null || playerTeam.getColor() == null ||
                 !ls$allowedColors.contains(playerTeam.getColor().getName().toLowerCase(Locale.ROOT)) ||
                 !ls$allowedHearts.contains(texturePath) || Main.modFullyDisabled()) {
-            if (MainClient.clientCurrentSeason == Seasons.SECRET_LIFE && texturePath.startsWith("hud/heart/container")) {
+            if (MainClient.clientCurrentSeason == Seasons.DOUBLE_LIFE && texturePath.startsWith("hud/heart/container")) {
                 return;
             }
             //? if <= 1.20 {
@@ -125,7 +125,7 @@ public class GuiMixin {
     *///?} else {
     private void ls$afterHeartDraw(GuiGraphics instance, RenderPipeline renderPipeline, Identifier identifier, int x, int y, int u, int v) {
     //?}
-        if (MainClient.clientCurrentSeason != Seasons.SECRET_LIFE || Main.modFullyDisabled()) {
+        if (MainClient.clientCurrentSeason != Seasons.DOUBLE_LIFE || Main.modFullyDisabled()) {
             return;
         }
         String name = identifier.getPath();

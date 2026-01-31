@@ -9,7 +9,6 @@ import net.mat0u5.lifeseries.utils.other.IdentifierHelper;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.SleepStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -20,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.mat0u5.lifeseries.Main.currentSeason;
-import static net.mat0u5.lifeseries.Main.currentSession;
 
 //? if <= 1.20
 /*import net.minecraft.util.RandomSource;*/
@@ -35,7 +33,7 @@ public class ServerLevelMixin {
 
     @Inject(method = "broadcastEntityEvent", at = @At("HEAD"))
     public void broadcast(Entity entity, byte status, CallbackInfo ci) {
-        if (status != (byte) 35 || currentSeason.getSeason() != Seasons.SECRET_LIFE || Main.modDisabled()) {
+        if (status != (byte) 35 || currentSeason.getSeason() != Seasons.DOUBLE_LIFE || Main.modDisabled()) {
             return;
         }
         // This sound doesnt exist client-side, so it won't double

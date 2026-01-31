@@ -3,9 +3,13 @@ package net.mat0u5.lifeseries.seasons.season.secretlife;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.StringListConfig;
 import net.mat0u5.lifeseries.config.StringListManager;
+import net.mat0u5.lifeseries.seasons.season.doublelife.DoubleLife;
 import net.mat0u5.lifeseries.seasons.session.SessionAction;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
-import net.mat0u5.lifeseries.utils.other.*;
+import net.mat0u5.lifeseries.utils.other.IdentifierHelper;
+import net.mat0u5.lifeseries.utils.other.TaskScheduler;
+import net.mat0u5.lifeseries.utils.other.TextUtils;
+import net.mat0u5.lifeseries.utils.other.Time;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.mat0u5.lifeseries.utils.world.AnimationUtils;
 import net.mat0u5.lifeseries.utils.world.DatapackIntegration;
@@ -13,33 +17,25 @@ import net.mat0u5.lifeseries.utils.world.ItemSpawner;
 import net.mat0u5.lifeseries.utils.world.ItemStackUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 import static net.mat0u5.lifeseries.Main.*;
-//? if <= 1.20.3 {
-/*import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.server.network.FilteredText;
-*///?}
-//? if >= 1.20.5 {
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.server.network.Filterable;
-import net.minecraft.world.item.component.WrittenBookContent;
 //?}
 
 public class TaskManager {
@@ -323,57 +319,42 @@ public class TaskManager {
             secretKeeperBeingUsed = false;
             return;
         }
+
         secretKeeperBeingUsed = true;
-        SecretLife season = (SecretLife) currentSeason;
-        double currentHealth = season.getPlayerHealth(player);
-        if (currentHealth > SecretLife.MAX_HEALTH) currentHealth = SecretLife.MAX_HEALTH;
-        int rounded = (int) Math.floor(currentHealth);
-        int remainderToMax = (int) SecretLife.MAX_HEALTH - rounded;
+        DoubleLife season = (DoubleLife) currentSeason;
+        Vec3 spawnPos = itemSpawnerPos.getCenter();
 
-        if (addHealth <= remainderToMax && remainderToMax != 0) {
-            season.addPlayerHealth(player, addHealth);
-            secretKeeperBeingUsed = false;
+        for (int i = 0; i <= addHealth; i++) {
+            if (i == 0) continue;
+            TaskScheduler.scheduleTask(3*i, () -> {
+                server.overworld().playSound(null, spawnPos.x(), spawnPos.y(), spawnPos.z(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                List<ItemStack> lootTableItems = new ArrayList<>();
+
+                if (taskType == TaskTypes.HARD) {
+                    lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable_hard"), true);
+                }
+                else if (taskType == TaskTypes.RED) {
+                    lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable_red"), true);
+                }
+
+                if (taskType == TaskTypes.EASY || lootTableItems.isEmpty()) {
+                    lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable"), false);
+                }
+
+                if (!lootTableItems.isEmpty()) {
+                    for (ItemStack item : lootTableItems) {
+                        ItemStackUtils.spawnItemForPlayer(server.overworld(), spawnPos, item, player);
+                    }
+                }
+                else {
+                    ItemStack randomItem = season.itemSpawner().getRandomItem();
+                    ItemStackUtils.spawnItemForPlayer(server.overworld(), spawnPos, randomItem, player);
+                }
+
+            });
         }
-        else {
-            if (remainderToMax != 0) season.setPlayerHealth(player, SecretLife.MAX_HEALTH);
-            int itemsNum = (addHealth - remainderToMax)/2;
-            if (itemsNum == 0) {
-                secretKeeperBeingUsed = false;
-                return;
-            }
-            Vec3 spawnPos = itemSpawnerPos.getCenter();
-            for (int i = 0; i <= itemsNum; i++) {
-                if (i == 0) continue;
-                TaskScheduler.scheduleTask(3*i, () -> {
-                    server.overworld().playSound(null, spawnPos.x(), spawnPos.y(), spawnPos.z(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
-
-                    List<ItemStack> lootTableItems = new ArrayList<>();
-
-                    if (taskType == TaskTypes.HARD) {
-                        lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable_hard"), true);
-                    }
-                    else if (taskType == TaskTypes.RED) {
-                        lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable_red"), true);
-                    }
-
-                    if (taskType == TaskTypes.EASY || lootTableItems.isEmpty()) {
-                        lootTableItems = ItemSpawner.getRandomItemsFromLootTable(server, server.overworld(), player, IdentifierHelper.of("lifeseriesdynamic", "task_reward_loottable"), false);
-                    }
-
-                    if (!lootTableItems.isEmpty()) {
-                        for (ItemStack item : lootTableItems) {
-                            ItemStackUtils.spawnItemForPlayer(server.overworld(), spawnPos, item, player);
-                        }
-                    }
-                    else {
-                        ItemStack randomItem = season.itemSpawner.getRandomItem();
-                        ItemStackUtils.spawnItemForPlayer(server.overworld(), spawnPos, randomItem, player);
-                    }
-
-                });
-            }
-            TaskScheduler.scheduleTask(3*itemsNum+20, () -> secretKeeperBeingUsed = false);
-        }
+        TaskScheduler.scheduleTask(3*addHealth+20, () -> secretKeeperBeingUsed = false);
     }
 
     public static boolean hasSessionStarted(ServerPlayer player) {
@@ -466,15 +447,12 @@ public class TaskManager {
             //?}
             AnimationUtils.spawnFireworkBall(server.overworld(), centerPos, 40, 0.3, new Vector3f(0, 1, 0));
             if (type == TaskTypes.EASY) {
-                showHeartTitle(player, EASY_SUCCESS);
                 addHealthThenItems(player, EASY_SUCCESS, type);
             }
             if (type == TaskTypes.HARD) {
-                showHeartTitle(player, HARD_SUCCESS);
                 addHealthThenItems(player, HARD_SUCCESS, type);
             }
             if (type == TaskTypes.RED) {
-                showHeartTitle(player, RED_SUCCESS);
                 addHealthThenItems(player, RED_SUCCESS, type);
             }
         });
@@ -548,7 +526,7 @@ public class TaskManager {
             if (!hasSessionStarted(player)) return;
             if (isBeingUsed(player)) return;
         }
-        SecretLife season = (SecretLife) currentSeason;
+        DoubleLife season = (DoubleLife) currentSeason;
         TaskTypes type = getPlayersTaskType(player);
         if (!hasTaskBookCheck(player, !fromCommand)) return;
         if (BROADCAST_SECRET_KEEPER) {
@@ -572,21 +550,6 @@ public class TaskManager {
             server.overworld().playSound(null, centerPos.x(), centerPos.y(), centerPos.z(), SoundEvents.TRIAL_SPAWNER_SPAWN_MOB, SoundSource.PLAYERS, 1.0F, 1.0F);
             //?}
             AnimationUtils.spawnFireworkBall(server.overworld(), centerPos, 40, 0.3, new Vector3f(1, 0, 0));
-            if (type == TaskTypes.EASY) {
-                showHeartTitle(player, EASY_FAIL);
-                season.removePlayerHealth(player, -EASY_FAIL);
-            }
-            if (type == TaskTypes.HARD) {
-                showHeartTitle(player, HARD_FAIL);
-                season.removePlayerHealth(player, -HARD_FAIL);
-            }
-            if (type == TaskTypes.RED) {
-                showHeartTitle(player, RED_FAIL);
-                season.removePlayerHealth(player, -RED_FAIL);
-            }
-            if (!player.ls$isOnLastLife(false)) {
-                secretKeeperBeingUsed = false;
-            }
         });
         DatapackIntegration.EVENT_TASK_FAIL.trigger(new DatapackIntegration.Events.MacroEntry("Player", player.getScoreboardName()));
         chooseNewTaskForPlayerIfNecessary(player);
@@ -600,33 +563,6 @@ public class TaskManager {
                 chooseTasks(List.of(player), newType);
             });
         }
-    }
-
-    public static void showHeartTitle(ServerPlayer player, int amount) {
-        if (amount == 0) return;
-        SecretLife season = (SecretLife) currentSeason;
-        if (amount > 0 && season.getPlayerHealth(player) >= SecretLife.MAX_HEALTH) return;
-        int healthBefore = Mth.ceil(season.getPlayerHealth(player));
-        int finalAmount = amount;
-        if (healthBefore + amount <= 0) {
-            finalAmount = -healthBefore+1;
-            if (healthBefore == 1) finalAmount = 0;
-        }
-        if (healthBefore + amount > SecretLife.MAX_HEALTH) {
-            if (amount > 0) finalAmount = (int) (SecretLife.MAX_HEALTH-healthBefore);
-            else finalAmount = amount;
-        }
-        double finalHearts = (double) finalAmount / 2;
-        if (finalHearts == 0) return;
-
-        String finalStr = String.valueOf(finalHearts);
-        if (finalAmount%2==0) finalStr = String.valueOf((int)finalHearts);
-
-
-        ChatFormatting formatting = ChatFormatting.GREEN;
-        if (finalAmount < 0) formatting = ChatFormatting.RED;
-        else finalStr = "+"+finalStr;
-        PlayerUtils.sendTitle(player, TextUtils.format("{} Hearts", finalStr).withStyle(formatting), 20, 40, 20);
     }
 
     public static boolean alreadyHasPos(BlockPos pos) {

@@ -163,7 +163,7 @@ public abstract class Season {
             *///?} else {
             OtherUtils.setBooleanGameRule(overworld, GameRules.KEEP_INVENTORY, seasonConfig.KEEP_INVENTORY.get(seasonConfig));
             OtherUtils.setBooleanGameRule(overworld, GameRules.SHOW_ADVANCEMENT_MESSAGES, seasonConfig.SHOW_ADVANCEMENTS.get(seasonConfig));
-            OtherUtils.setBooleanGameRule(overworld, GameRules.NATURAL_HEALTH_REGENERATION, getSeason() != Seasons.SECRET_LIFE);
+            OtherUtils.setBooleanGameRule(overworld, GameRules.NATURAL_HEALTH_REGENERATION, getSeason() != Seasons.DOUBLE_LIFE);
             //?}
 
             //? if >= 1.21.6 {

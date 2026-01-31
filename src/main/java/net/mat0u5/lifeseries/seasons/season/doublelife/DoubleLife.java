@@ -14,6 +14,7 @@ import net.mat0u5.lifeseries.seasons.subin.SubInManager;
 import net.mat0u5.lifeseries.utils.interfaces.IHungerManager;
 import net.mat0u5.lifeseries.utils.other.*;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
+import net.mat0u5.lifeseries.utils.world.ItemSpawner;
 import net.mat0u5.lifeseries.utils.world.LevelUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
@@ -90,6 +91,10 @@ public class DoubleLife extends Season {
     @Override
     public Seasons getSeason() {
         return Seasons.DOUBLE_LIFE;
+    }
+
+    public ItemSpawner itemSpawner() {
+        return this.secretLife.itemSpawner;
     }
 
     @Override
