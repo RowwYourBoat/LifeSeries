@@ -4,61 +4,11 @@ import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigFileEntry;
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.utils.enums.ConfigTypes;
-import net.mat0u5.lifeseries.utils.other.TextUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SecretLifeConfig extends ConfigManager {
-    public static final List<String> BLACKLISTED_ITEMS = List.of(
-            "lectern",
-            //? if >= 1.21
-            "mace",
-            "end_crystal",
-            "leather_helmet",
-            "chainmail_helmet",
-            "golden_helmet",
-            "iron_helmet",
-            "diamond_helmet",
-            "netherite_helmet",
-            "turtle_helmet",
-            //? if >= 1.21.9
-            "copper_helmet",
-            "elytra"
-    );
-
-    public static final List<String> BLACKLISTED_BLOCKS = List.of(
-            "lectern"
-    );
-    public static final List<String> CLAMPED_ENCHANTMENTS = List.of(
-            "sharpness",
-            "smite",
-            "bane_of_arthropods",
-            "fire_aspect",
-            "knockback",
-            //? if <= 1.20.3 {
-            /*"sweeping",
-            *///?} else {
-            "sweeping_edge",
-            //?}
-
-            "power",
-            "punch",
-
-            "thorns",
-
-            //? if >= 1.21 {
-            "breach",
-            "density",
-            "wind_burst",
-            //?}
-
-            "multishot",
-            "piercing",
-            "quick_charge"
-    );
-
-
     public static final ConfigFileEntry<Boolean> PLAYERS_DROP_TASK_ON_DEATH = new ConfigFileEntry<>(
             "players_drop_task_on_death", false, "season",
             "Drop Task On Death", "Decides whether players drop their secret task book on death or if they keep it."
@@ -128,7 +78,7 @@ public class SecretLifeConfig extends ConfigManager {
     }
 
     @Override
-    protected List<ConfigFileEntry<?>> getSeasonSpecificConfigEntries() {
+    public List<ConfigFileEntry<?>> getSeasonSpecificConfigEntries() {
         return new ArrayList<>(List.of(
                 PLAYERS_DROP_TASK_ON_DEATH
                 ,ASSIGN_TASKS_MINUTE
@@ -153,12 +103,8 @@ public class SecretLifeConfig extends ConfigManager {
 
     @Override
     public void instantiateProperties() {
-        BLACKLIST_ITEMS.defaultValue = TextUtils.formatString("[{}]", BLACKLISTED_ITEMS);
-        BLACKLIST_BLOCKS.defaultValue = TextUtils.formatString("[{}]", BLACKLISTED_BLOCKS);
-        BLACKLIST_CLAMPED_ENCHANTS.defaultValue = TextUtils.formatString("[{}]", CLAMPED_ENCHANTMENTS);
         MAX_PLAYER_HEALTH.defaultValue = 60;
         SPAWN_EGG_ALLOW_ON_SPAWNER.defaultValue = true;
         SPAWNER_RECIPE.defaultValue = true;
-        super.instantiateProperties();
     }
 }

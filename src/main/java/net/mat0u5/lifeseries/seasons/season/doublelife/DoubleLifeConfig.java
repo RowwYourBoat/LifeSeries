@@ -3,6 +3,7 @@ package net.mat0u5.lifeseries.seasons.season.doublelife;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigFileEntry;
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeConfig;
 import net.mat0u5.lifeseries.utils.enums.ConfigTypes;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
 
@@ -10,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DoubleLifeConfig extends ConfigManager {
+
+    private final SecretLifeConfig secretLifeConfig = new SecretLifeConfig();
+
     public static final List<String> BLACKLISTED_ITEMS = List.of(
             "lectern",
             "bookshelf",
@@ -132,6 +136,10 @@ public class DoubleLifeConfig extends ConfigManager {
         //? if >= 1.21.6 {
         result.add(SOULMATE_LOCATOR_BAR);
         //?}
+
+        List<ConfigFileEntry<?>> secretLifeEntries = this.secretLifeConfig.getSeasonSpecificConfigEntries();
+        result.addAll(secretLifeEntries);
+
         return result;
     }
 
@@ -141,6 +149,9 @@ public class DoubleLifeConfig extends ConfigManager {
         BLACKLIST_ITEMS.defaultValue = TextUtils.formatString("[{}]", BLACKLISTED_ITEMS);
         BLACKLIST_BLOCKS.defaultValue = TextUtils.formatString("[{}]", BLACKLISTED_BLOCKS);
         BLACKLIST_CLAMPED_ENCHANTS.defaultValue = TextUtils.formatString("[{}]", CLAMPED_ENCHANTMENTS);
+
+        this.secretLifeConfig.instantiateProperties();
+
         super.instantiateProperties();
     }
 }

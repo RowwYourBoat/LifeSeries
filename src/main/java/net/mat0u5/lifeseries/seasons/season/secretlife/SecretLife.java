@@ -99,7 +99,6 @@ public class SecretLife extends Season {
 
     @Override
     public void reload() {
-        super.reload();
         MAX_HEALTH = seasonConfig.MAX_PLAYER_HEALTH.get(seasonConfig);
         MAX_KILL_HEALTH = SecretLifeConfig.MAX_PLAYER_KILL_HEALTH.get(seasonConfig);
         TaskManager.EASY_SUCCESS = SecretLifeConfig.TASK_HEALTH_EASY_PASS.get(seasonConfig);
@@ -118,7 +117,6 @@ public class SecretLife extends Season {
 
     @Override
     public void onPlayerRespawn(ServerPlayer player) {
-        super.onPlayerRespawn(player);
         if (giveBookOnRespawn.containsKey(player.getUUID())) {
             ItemStack book = giveBookOnRespawn.get(player.getUUID());
             giveBookOnRespawn.remove(player.getUUID());
@@ -301,8 +299,6 @@ public class SecretLife extends Season {
 
     @Override
     public void onPlayerJoin(ServerPlayer player) {
-        super.onPlayerJoin(player);
-
         if (TaskManager.tasksChosen && !TaskManager.tasksChosenFor.contains(player.getUUID())) {
             TaskScheduler.scheduleTask(Time.seconds(5), () -> TaskManager.chooseTasks(List.of(player), null));
         }
@@ -318,7 +314,6 @@ public class SecretLife extends Season {
     @Override
     public void onPlayerFinishJoining(ServerPlayer player) {
         TaskManager.checkSecretLifePositions();
-        super.onPlayerFinishJoining(player);
     }
 
     @Override
@@ -337,7 +332,6 @@ public class SecretLife extends Season {
 
     @Override
     public void addSessionActions() {
-        super.addSessionActions();
         currentSession.addSessionAction(TaskManager.getActionChooseTasks());
         currentSession.addSessionActionIfTime(taskWarningAction);
         currentSession.addSessionActionIfTime(taskWarningAction2);
@@ -346,7 +340,6 @@ public class SecretLife extends Season {
 
     @Override
     public void sessionEnd() {
-        super.sessionEnd();
         List<String> playersWithTaskBooks = new ArrayList<>();
         for (ServerPlayer player : livesManager.getNonRedPlayers()) {
             if (player.ls$isDead()) continue;
@@ -384,18 +377,13 @@ public class SecretLife extends Season {
     private Time timer = Time.zero();
     @Override
     public void tick(MinecraftServer server) {
-        super.tick(server);
         TaskManager.tick();
         timer.tick();
-        if (timer.isMultipleOf(Time.seconds(1))) {
-            checkNaturalRegeneration();
-        }
     }
 
     private Map<UUID, ItemStack> giveBookOnRespawn = new HashMap<>();
     @Override
     public void modifyEntityDrops(LivingEntity entity, DamageSource damageSource, CallbackInfo ci) {
-        super.modifyEntityDrops(entity, damageSource, ci);
         if (entity instanceof ServerPlayer player) {
             boolean dropBook = SecretLifeConfig.PLAYERS_DROP_TASK_ON_DEATH.get(seasonConfig);
             if (dropBook || server == null) return;

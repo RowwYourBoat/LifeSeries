@@ -1,11 +1,14 @@
 package net.mat0u5.lifeseries.seasons.season.doublelife;
 
-import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.config.StringListConfig;
 import net.mat0u5.lifeseries.seasons.boogeyman.BoogeymanManager;
 import net.mat0u5.lifeseries.seasons.season.Season;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
+import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLife;
+import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeCommands;
+import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeConfig;
+import net.mat0u5.lifeseries.seasons.season.secretlife.TaskManager;
 import net.mat0u5.lifeseries.seasons.session.SessionAction;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
 import net.mat0u5.lifeseries.seasons.subin.SubInManager;
@@ -17,15 +20,18 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -33,11 +39,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
-
-//? if <= 1.21.9
-/*import net.minecraft.world.level.GameRules;*/
-//? if > 1.21.9
-import net.minecraft.world.level.gamerules.GameRules;
 
 public class DoubleLife extends Season {
     public static final ResourceKey<DamageType> SOULMATE_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,  IdentifierHelper.mod("soulmate"));
@@ -65,6 +66,8 @@ public class DoubleLife extends Season {
         }
     };
 
+    private final SecretLife secretLife = new SecretLife();
+
     public Map<UUID, UUID> soulmates = new TreeMap<>();
     public Map<UUID, UUID> soulmatesOrdered = new TreeMap<>();
     public static Map<UUID, UUID> soulmatesForce = new HashMap<>();
@@ -73,6 +76,7 @@ public class DoubleLife extends Season {
     @Override
     public void initialize() {
         super.initialize();
+        this.secretLife.initialize();
         soulmateConfig = getSoulmateConfig();
     }
 
@@ -88,6 +92,7 @@ public class DoubleLife extends Season {
     @Override
     public ConfigManager createConfig() {
         getSoulmateConfig();
+        this.secretLife.initialize();
         return new DoubleLifeConfig();
     }
 
@@ -99,6 +104,7 @@ public class DoubleLife extends Season {
     @Override
     public void reloadStart() {
         loadSoulmates();
+        this.secretLife.initialize();
     }
 
     @Override
@@ -110,6 +116,18 @@ public class DoubleLife extends Season {
         if (!isSoulmateOnline(player)) return;
 
         syncPlayer(player);
+        this.secretLife.onPlayerJoin(player);
+    }
+
+    @Override
+    public void onPlayerFinishJoining(ServerPlayer player) {
+        this.secretLife.onPlayerFinishJoining(player);
+        super.onPlayerFinishJoining(player);
+    }
+
+    @Override
+    public boolean sessionStart() {
+        return this.secretLife.sessionStart();
     }
 
     @Override
@@ -119,6 +137,14 @@ public class DoubleLife extends Season {
         if (!DISABLE_START_TELEPORT) {
             currentSession.addSessionAction(actionRandomTP);
         }
+
+        this.secretLife.addSessionActions();
+    }
+
+    @Override
+    public void sessionEnd() {
+        super.sessionEnd();
+        this.secretLife.sessionEnd();
     }
 
     @Override
@@ -132,6 +158,7 @@ public class DoubleLife extends Season {
     public void onPlayerRespawn(ServerPlayer player) {
         super.onPlayerRespawn(player);
         syncPlayer(player);
+        this.secretLife.onPlayerRespawn(player);
     }
 
     @Override
@@ -147,6 +174,20 @@ public class DoubleLife extends Season {
         SOULBOUND_BOOGEYMAN = DoubleLifeConfig.SOULBOUND_BOOGEYMAN.get(seasonConfig);
         SOULMATES_PVP_ALLOWED = DoubleLifeConfig.SOULMATES_PVP_ALLOWED.get(seasonConfig);
         syncAllPlayers();
+
+        this.secretLife.reload();
+    }
+
+    @Override
+    public void tick(MinecraftServer server) {
+        super.tick(server);
+        this.secretLife.tick(server);
+    }
+
+    @Override
+    public void modifyEntityDrops(LivingEntity entity, DamageSource damageSource, CallbackInfo ci) {
+        super.modifyEntityDrops(entity, damageSource, ci);
+        this.secretLife.modifyEntityDrops(entity, damageSource, ci);
     }
 
     public void loadSoulmates() {
