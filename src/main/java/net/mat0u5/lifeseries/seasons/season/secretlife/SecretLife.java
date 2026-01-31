@@ -55,7 +55,7 @@ import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class SecretLife extends Season {
-    public static double MAX_HEALTH = 60.0d;
+    public static double MAX_HEALTH = 20.0d;
     public static double MAX_KILL_HEALTH = 1000.0d;
     public static boolean ONLY_LOSE_HEARTS_IN_SESSION = false;
 
@@ -449,8 +449,7 @@ public class SecretLife extends Season {
     }
 
     public boolean canChangeHealth() {
-        if (!ONLY_LOSE_HEARTS_IN_SESSION) return true;
-        return currentSession != null && currentSession.statusStarted();
+        return true;
     }
 
     @Override
