@@ -99,6 +99,7 @@ public abstract class ConfigManager extends DefaultConfigValues {
                 ,TAB_LIST_SHOW_DEAD_PLAYERS
                 ,GROUP_SPAWN_EGG // Group
                 ,GROUP_WATCHERS // Group
+                ,GROUP_SUBIN // Group
 
 
                 //Group stuff
@@ -157,6 +158,8 @@ public abstract class ConfigManager extends DefaultConfigValues {
 
                 ,WATCHERS_IN_TAB
                 ,WATCHERS_MUTED
+                ,SUBIN_CHANGE_SKIN
+                ,SUBIN_CHANGE_USERNAME
         ));
     }
 
