@@ -36,7 +36,6 @@ import org.joml.Vector3f;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
-//?}
 
 public class TaskManager {
     public static int EASY_SUCCESS = 20;
