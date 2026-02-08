@@ -8,6 +8,7 @@ import net.mat0u5.lifeseries.seasons.season.limitedlife.LimitedLife;
 import net.mat0u5.lifeseries.utils.enums.PacketNames;
 import net.mat0u5.lifeseries.utils.enums.SessionTimerStates;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
+import net.mat0u5.lifeseries.utils.other.TaskScheduler;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
 import net.mat0u5.lifeseries.utils.other.Time;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
@@ -33,6 +34,8 @@ public class Session {
     public static final Time DISPLAY_TIMER_INTERVAL = Time.ticks(5);
     public static final Time TAB_LIST_INTERVAL = Time.ticks(20);
     public static boolean TICK_FREEZE_NOT_IN_SESSION = false;
+    public static boolean WORLDBORDER_OUTSIDE_TELEPORT = true;
+    public static boolean SESSION_START_COUNTDOWN = false;
 
     private Time timer = Time.zero();
     private Time sessionLength = Time.nullTime();
@@ -41,6 +44,7 @@ public class Session {
     public List<Time[]> sessionPauses = new ArrayList<>();
 
     private SessionStatus status = SessionStatus.NOT_STARTED;
+    private int sessionStartInProgress = 0;
 
     SessionAction endWarning1 = new SessionAction(Time.minutes(-5)) {
         @Override
@@ -65,6 +69,28 @@ public class Session {
         if (!canStartSession()) return false;
         clearSessionActions();
         if (!currentSeason.sessionStart()) return false;
+        if (sessionStartInProgress > 0) return false;
+        if (!SESSION_START_COUNTDOWN) {
+            startSession();
+        }
+        else {
+            sessionStartInProgress = 150;
+            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§a3"), 15, 35, 15);
+            TaskScheduler.schedulePriorityTask(50, () -> {
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§e2"), 15, 35, 15);
+            });
+            TaskScheduler.schedulePriorityTask(100, () -> {
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§c1"), 15, 35, 15);
+            });
+            TaskScheduler.schedulePriorityTask(150, () -> {
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§aThe timer has begun!"), 15, 35, 15);
+                startSession();
+            });
+        }
+        return true;
+    }
+
+    private void startSession() {
         changeStatus(SessionStatus.STARTED);
         passedTime = Time.zero();
         fullPassedTime = Time.zero();
@@ -80,7 +106,6 @@ public class Session {
 
         SessionTranscript.sessionStart();
         SessionTranscript.logPlayers();
-        return true;
     }
 
     public void clearSessionActions() {
@@ -245,6 +270,8 @@ public class Session {
     }
 
     public void tick(MinecraftServer server) {
+        if (sessionStartInProgress > 0) sessionStartInProgress--;
+
         if (statusPaused()) {
             //? if < 1.20.3 {
             /*float tickRate = 20;
@@ -368,6 +395,7 @@ public class Session {
 
     private Map<UUID, Vec3> lastNonBorderPositions = new HashMap<>();
     public void checkPlayerPosition(ServerPlayer player) {
+        if (!WORLDBORDER_OUTSIDE_TELEPORT) return;
         WorldBorder border = player.ls$getServerLevel().getWorldBorder();
         double playerSize = player.getBoundingBox().getXsize()/2;
         double minX = Math.floor(border.getMinX()) + playerSize;

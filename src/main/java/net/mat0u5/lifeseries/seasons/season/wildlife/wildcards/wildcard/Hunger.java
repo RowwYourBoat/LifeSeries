@@ -38,7 +38,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 //?}
 //? if <= 1.21
-/*import java.util.Optional;*/
+//import java.util.Optional;
 //? if >= 1.21.2 {
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.component.Consumable;

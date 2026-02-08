@@ -18,16 +18,16 @@ public class DefaultConfigValues {
             "creative_ignore_blacklist", true, "global.blacklist",
             "Creative Ignore Blacklist", "Controls whether players in creative mode are able to bypass the blacklists."
     );
+    public final ConfigFileEntry<Object> WORLDBORDER_GROUP = new ConfigFileEntry<>(
+            "worldborder_sizes", null, ConfigTypes.TEXT, "{global.worldborder}",
+            "Worldborder Settings", ""
+    );
     //? if < 1.21.9 {
     /*public final ConfigFileEntry<Integer> WORLDBORDER_SIZE = new ConfigFileEntry<>(
             "worldborder_size", 500, "global",
             "Worldborder Size", "Sets the worldborder size."
     );
     *///?} else {
-    public final ConfigFileEntry<Object> WORLDBORDER_GROUP = new ConfigFileEntry<>(
-            "worldborder_sizes", null, ConfigTypes.TEXT, "{global.worldborder}",
-            "Worldborder Sizes", ""
-    );
     public final ConfigFileEntry<Integer> WORLDBORDER_SIZE = new ConfigFileEntry<>(
             "worldborder_size", 500, "global.worldborder",
             "Worldborder Size", "Sets the worldborder size in the overworld."
@@ -113,10 +113,27 @@ public class DefaultConfigValues {
             "blacklist_blocks", "[]", ConfigTypes.BLOCK_LIST, "global.blacklist",
             "Blacklisted Blocks", "List of banned blocks."
     );
-    public final ConfigFileEntry<String> BLACKLIST_CLAMPED_ENCHANTS = new ConfigFileEntry<>(
-            "blacklist_clamped_enchants", "[]", ConfigTypes.ENCHANT_LIST, "global.blacklist",
-            "Clamped Enchants", "List of enchantments clamped to level 1 (any higher levels will be set to lvl1)."
+    public final ConfigFileEntry<Object> GROUP_CLAMPED_ENCHANTS = new ConfigFileEntry<>(
+            "group_clamped_enchants", null, ConfigTypes.TEXT, "{global.blacklist.enchants}[new]",
+            "Clamped Enchantments", ""
     );
+    public final ConfigFileEntry<String> BLACKLIST_CLAMPED_ENCHANTS_LEVEL_1 = new ConfigFileEntry<>(
+            "blacklist_clamped_enchants_level_1", "[]", ConfigTypes.ENCHANT_LIST, "global.blacklist.enchants[new]",
+            "Clamped To Level 1", "List of enchantments clamped to level 1 (any higher levels will be set to lvl1)."
+    );
+    public final ConfigFileEntry<String> BLACKLIST_CLAMPED_ENCHANTS_LEVEL_2 = new ConfigFileEntry<>(
+            "blacklist_clamped_enchants_level_2", "[]", ConfigTypes.ENCHANT_LIST, "global.blacklist.enchants[new]",
+            "Clamped To Level 2", "List of enchantments clamped to level 2 (any higher levels will be set to lvl2)."
+    );
+    public final ConfigFileEntry<String> BLACKLIST_CLAMPED_ENCHANTS_LEVEL_3 = new ConfigFileEntry<>(
+            "blacklist_clamped_enchants_level_3", "[]", ConfigTypes.ENCHANT_LIST, "global.blacklist.enchants[new]",
+            "Clamped To Level 3", "List of enchantments clamped to level 3 (any higher levels will be set to lvl3)."
+    );
+    public final ConfigFileEntry<String> BLACKLIST_CLAMPED_ENCHANTS_LEVEL_4 = new ConfigFileEntry<>(
+            "blacklist_clamped_enchants_level_4", "[]", ConfigTypes.ENCHANT_LIST, "global.blacklist.enchants[new]",
+            "Clamped To Level 4", "List of enchantments clamped to level 4 (any higher levels will be set to lvl4)."
+    );
+
     public final ConfigFileEntry<String> BLACKLIST_RECIPES = new ConfigFileEntry<>(
             "blacklist_recipes", "[]", ConfigTypes.ITEM_LIST, "global.blacklist",
             "Blacklisted Recipes", "List of banned recipes - items you can't craft."
@@ -232,6 +249,10 @@ public class DefaultConfigValues {
             "boogeyman_steal_life", false, "global.boogeyman",
             "Boogeyman Steal Life", "When a boogeyman gets cured, they gain a life for completing their task."
     );
+    public final ConfigFileEntry<Boolean> BOOGEYMAN_LOCATOR_BAR = new ConfigFileEntry<>(
+            "boogeyman_locator_bar", false, "global.boogeyman[new]",
+            "Boogeyman Locator Bar", "Controls whether the Boogeyman can see all other players on the locator bar."
+    );
 
     public final ConfigFileEntry<Boolean> SECRET_SOCIETY = new ConfigFileEntry<>(
             "secret_society", false, "{global.society}",
@@ -313,6 +334,26 @@ public class DefaultConfigValues {
     public final ConfigFileEntry<Boolean> SUBIN_CHANGE_USERNAME = new ConfigFileEntry<>(
             "subin_change_username", true, "global.subin[new]",
             "Sub-in Change Username", "Controls whether the player subbing in will get the username of the player they are subbing in for."
+    );
+    public final ConfigFileEntry<Boolean> WORLDBORDER_OUTSIDE_TELEPORT = new ConfigFileEntry<>(
+            "worldborder_outside_teleport", true, "global.worldborder[new]",
+            "Worldborder Outside Teleport", "Controls whether players that get outside the worldborder get teleported back inside."
+    );
+    public final ConfigFileEntry<Boolean> SESSION_START_COUNTDOWN = new ConfigFileEntry<>(
+            "session_start_countdown", false, "global[new]",
+            "Session Start Countdown", "Shows a countdown when the session is starting.."
+    );
+    public final ConfigFileEntry<Boolean> LIVES_RANDOMIZE = new ConfigFileEntry<>(
+            "lives_randomize", false, "{global.lives.random}[new]",
+            "Randomize Lives", "Makes every player get a random amount of lives."
+    );
+    public final ConfigFileEntry<Integer> LIVES_RANDOMIZE_MIN = new ConfigFileEntry<>(
+            "lives_randomize_min", 2, "global.lives.random[new]",
+            "Minimum Lives", "The minimum number of lives any player can have after randomization."
+    );
+    public final ConfigFileEntry<Integer> LIVES_RANDOMIZE_MAX = new ConfigFileEntry<>(
+            "lives_randomize_max", 6, "global.lives.random[new]",
+            "Maximum Lives", "The maximum number of lives any player can have after randomization."
     );
 
 

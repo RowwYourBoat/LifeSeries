@@ -20,11 +20,11 @@ import static net.mat0u5.lifeseries.Main.server;
 //? if >= 1.20.3
 import net.minecraft.server.ServerTickRateManager;
 //? if <= 1.21.9
-/*import net.minecraft.world.level.GameRules;*/
+//import net.minecraft.world.level.GameRules;
 //? if > 1.21.9
 import net.minecraft.world.level.gamerules.GameRules;
 //? if >= 26.1
-/*import net.minecraft.world.clock.WorldClocks;*/
+//import net.minecraft.world.clock.WorldClocks;
 
 public class TimeDilation extends Wildcard {
     public static float MIN_TICK_RATE = 1;

@@ -210,6 +210,20 @@ public class ClientConfigGuiManager {
             if (textObject.configType == ConfigTypes.TEAM_ENTRY) {
                 return new TeamConfigEntry(textObject.id, textObject.args);
             }
+            if (textObject.configType == ConfigTypes.SECRET_TASK) {
+                return new SecretLifeTaskConfigEntry(textObject.id, textObject.args);
+            }
+            if (textObject.configType == ConfigTypes.TRIVIA_QUESTION) {
+                try {
+                    textObject.args.remove(0);
+                    textObject.args.remove(0);
+                    textObject.args.remove(0);
+                    String triviaType = textObject.args.remove(0);
+                    String question = textObject.args.remove(0);
+                    int correctAnswerIndex = Integer.parseInt(textObject.args.remove(0));
+                    return TriviaQuestionConfigEntry.getEntry(triviaType, question, correctAnswerIndex, textObject.args);
+                }catch(Exception e) {}
+            }
             return new TextConfigEntry(textObject.id, textObject.name, textObject.description, textObject.clickable);
         }
         return null;

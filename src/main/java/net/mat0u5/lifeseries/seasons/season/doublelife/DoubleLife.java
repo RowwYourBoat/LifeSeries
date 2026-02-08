@@ -1,5 +1,6 @@
 package net.mat0u5.lifeseries.seasons.season.doublelife;
 
+import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.config.StringListConfig;
 import net.mat0u5.lifeseries.seasons.boogeyman.BoogeymanManager;
@@ -39,6 +40,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
+
+//? if <= 1.21.9
+//import net.minecraft.world.level.GameRules;
+//? if > 1.21.9
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class DoubleLife extends Season {
     public static final ResourceKey<DamageType> SOULMATE_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,  IdentifierHelper.mod("soulmate"));

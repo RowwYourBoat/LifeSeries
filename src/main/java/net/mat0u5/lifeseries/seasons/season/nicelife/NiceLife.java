@@ -42,7 +42,7 @@ import net.minecraft.world.level.material.Fluids;
 import static net.mat0u5.lifeseries.Main.*;
 
 //? if <= 1.21.9
-/*import net.minecraft.world.level.GameRules;*/
+//import net.minecraft.world.level.GameRules;
 import net.minecraft.world.phys.Vec3;
 //? if > 1.21.9
 import net.minecraft.world.level.gamerules.GameRules;
@@ -165,7 +165,11 @@ public class NiceLife extends Season {
             }
         }
         ServerLevel overworld = server.overworld();
+        //? if <= 1.21.11 {
         overworld.setWeatherParameters(0, 1000, true, false);
+        //?} else {
+        /*server.setWeatherParameters(0, 1000, true, false);
+        *///?}
 
         boolean advanceTime = !isMidnight() && (currentSession.statusStarted() || ADVANCE_TIME_WHEN_NOT_IN_SESSION);
         //? if <= 1.21.9 {

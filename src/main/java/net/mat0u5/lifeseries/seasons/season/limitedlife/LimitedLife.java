@@ -24,7 +24,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import java.util.Collection;
 
 //? if <= 1.20.2
-/*import net.minecraft.world.scores.Score;*/
+//import net.minecraft.world.scores.Score;
 //? if > 1.20.2
 import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.Team;
@@ -261,6 +261,9 @@ public class LimitedLife extends Season {
 
     @Override
     public Integer getDefaultLives() {
+        if (livesManager.ROLL_LIVES) {
+            return null;
+        }
         return LimitedLifeLivesManager.DEFAULT_TIME;
     }
 

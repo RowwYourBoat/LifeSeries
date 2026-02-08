@@ -6,8 +6,11 @@ import net.mat0u5.lifeseries.MainClient;
 import net.mat0u5.lifeseries.config.ClientConfigNetwork;
 import net.mat0u5.lifeseries.gui.config.entries.ConfigEntry;
 import net.mat0u5.lifeseries.gui.config.entries.GroupConfigEntry;
+import net.mat0u5.lifeseries.gui.config.entries.extra.TriviaQuestionConfigEntry;
 import net.mat0u5.lifeseries.gui.config.entries.main.TextConfigEntry;
+import net.mat0u5.lifeseries.render.RenderUtils;
 import net.mat0u5.lifeseries.utils.TextColors;
+import net.mat0u5.lifeseries.utils.other.OtherUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -78,6 +81,11 @@ public class ConfigScreen extends Screen {
                 entry.setScreen(this);
             }
         }
+        for (ConfigEntry entry : getAllEntries()) {
+            if (entry.screen == null) {
+                entry.setScreen(this);
+            }
+        }
     }
 
     @Override
@@ -99,7 +107,7 @@ public class ConfigScreen extends Screen {
         this.addWidget(this.searchField);
 
         //? if <= 1.20.2 {
-        /*this.listWidget = new ConfigListWidget(this.minecraft, this.width, this.height, listTop, this.height - FOOTER_HEIGHT, ConfigEntry.PREFFERED_HEIGHT);
+        /*this.listWidget = new ConfigListWidget(this.minecraft, this.width, this.height - listTop - FOOTER_HEIGHT, listTop, this.height - FOOTER_HEIGHT, ConfigEntry.PREFFERED_HEIGHT);
         *///?} else {
         this.listWidget = new ConfigListWidget(this.minecraft, this.width, this.height - listTop - FOOTER_HEIGHT, listTop, ConfigEntry.PREFFERED_HEIGHT);
         //?}
@@ -229,7 +237,12 @@ public class ConfigScreen extends Screen {
     public List<ConfigEntry> getAllEntries(List<ConfigEntry> currentEntries) {
         List<ConfigEntry> allEntries = new ArrayList<>();
         for (ConfigEntry entry : currentEntries) {
-            if (entry instanceof GroupConfigEntry<?> groupEntry) {
+            if (entry instanceof TriviaQuestionConfigEntry triviaQuestionConfigEntry) {
+                allEntries.add(triviaQuestionConfigEntry);
+                allEntries.addAll(getAllEntries(triviaQuestionConfigEntry.renderAsGroup.getChildEntries()));
+                allEntries.addAll(getAllEntries(List.of(triviaQuestionConfigEntry.renderAsGroup.getMainEntry())));
+            }
+            else if (entry instanceof GroupConfigEntry<?> groupEntry) {
                 allEntries.addAll(getAllEntries(groupEntry.getChildEntries()));
                 allEntries.addAll(getAllEntries(List.of(groupEntry.getMainEntry())));
             }
@@ -313,6 +326,15 @@ public class ConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        //?if <= 1.20.2 {
+        /*//?if <= 1.20 {
+        /^context.setColor(0.25F, 0.25F, 0.25F, 1.0F);
+        ^///?} else {
+        context.setColor(0.85F, 0.85F, 0.85F, 1.0F);
+        //?}
+        RenderUtils.texture(Screen.BACKGROUND_LOCATION, 0, this.height - FOOTER_HEIGHT, this.width, FOOTER_HEIGHT).textureSize(32, 32).render(context);
+        context.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        *///?}
         super.render(context, mouseX, mouseY, delta);
 
         context.drawCenteredString(this.font, this.title, this.width / 2, HEADER_TITLE_Y, TextColors.WHITE);
@@ -456,7 +478,7 @@ public class ConfigScreen extends Screen {
     }
 
     public void setFocusedEntry(ConfigEntry entry) {
-        if (entry instanceof GroupConfigEntry) return;
+        if (!entry.canLoseFocusEasily()) return;
         if (focusedEntry == entry) return;
         searchField.setFocused(false);
 

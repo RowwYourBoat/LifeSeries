@@ -27,6 +27,7 @@ import net.mat0u5.lifeseries.utils.other.Time;
 import net.mat0u5.lifeseries.utils.player.*;
 import net.mat0u5.lifeseries.utils.world.DatapackIntegration;
 import net.mat0u5.lifeseries.utils.world.LevelUtils;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -63,7 +64,7 @@ import static net.mat0u5.lifeseries.seasons.other.WatcherManager.isWatcher;
 //? if <= 1.20
 /*import net.minecraft.world.scores.Scoreboard;*/
 //? if <= 1.21.9
-/*import net.minecraft.world.level.GameRules;*/
+//import net.minecraft.world.level.GameRules;
 //? if > 1.21.9
 import net.minecraft.world.level.gamerules.GameRules;
 //? if > 1.20
@@ -130,6 +131,9 @@ public abstract class Season {
     }
 
     public Integer getDefaultLives() {
+        if (livesManager.ROLL_LIVES) {
+            return null;
+        }
         return seasonConfig.DEFAULT_LIVES.get(seasonConfig);
     }
 
@@ -169,6 +173,9 @@ public abstract class Season {
             boolean locatorBarEnabled = seasonConfig.LOCATOR_BAR.get(seasonConfig);
             if (!locatorBarEnabled && this instanceof DoubleLife) {
                 locatorBarEnabled = DoubleLife.SOULMATE_LOCATOR_BAR;
+            }
+            if (!locatorBarEnabled && boogeymanManager.BOOGEYMAN_ENABLED) {
+                locatorBarEnabled = boogeymanManager.BOOGEYMAN_LOCATOR_BAR;
             }
             //? if <= 1.21.9 {
             /*OtherUtils.setBooleanGameRule(overworld, GameRules.RULE_LOCATOR_BAR, locatorBarEnabled);
@@ -231,6 +238,8 @@ public abstract class Season {
         SHOW_LOGIN_COMMAND_INFO = seasonConfig.SHOW_LOGIN_COMMAND_INFO.get(seasonConfig);
         HIDE_UNJUSTIFIED_KILL_MESSAGES = seasonConfig.HIDE_UNJUSTIFIED_KILL_MESSAGES.get(seasonConfig);
         Session.TICK_FREEZE_NOT_IN_SESSION = seasonConfig.TICK_FREEZE_NOT_IN_SESSION.get(seasonConfig);
+        Session.WORLDBORDER_OUTSIDE_TELEPORT = seasonConfig.WORLDBORDER_OUTSIDE_TELEPORT.get(seasonConfig);
+        Session.SESSION_START_COUNTDOWN = seasonConfig.SESSION_START_COUNTDOWN.get(seasonConfig);
         BROADCAST_LIFE_GAIN = seasonConfig.BROADCAST_LIFE_GAIN.get(seasonConfig);
         ADDITIONAL_WITHER_SKULL_RATE = seasonConfig.ADDITIONAL_WITHER_SKULL_RATE.get(seasonConfig);
 
@@ -311,6 +320,7 @@ public abstract class Season {
 
         WatcherManager.createTeams();
         livesManager.createTeams();
+        TeamUtils.createTeam("zombie", "Zombie", ChatFormatting.GRAY);
     }
 
 
@@ -358,6 +368,9 @@ public abstract class Season {
         return livesManager.getTeamForPlayer(player);
     }
 
+    public boolean modifyKeepInventory(ServerPlayer player, boolean originalKeepInventory) {
+        return originalKeepInventory;
+    }
 
     public void dropItemsOnLastDeath(ServerPlayer player) {
         boolean doDrop = seasonConfig.PLAYERS_DROP_ITEMS_ON_FINAL_DEATH.get(seasonConfig);
@@ -409,12 +422,14 @@ public abstract class Season {
     public void sessionEnd() {
         boogeymanManager.sessionEnd();
         secretSociety.sessionEnd();
+        livesManager.assignedLives = false;
     }
 
     public boolean sessionStart() {
         boogeymanManager.resetBoogeymen();
         secretSociety.resetMembers();
         addSessionActions();
+        livesManager.assignedLives = false;
         return true;
     }
 
@@ -435,6 +450,7 @@ public abstract class Season {
     public void addSessionActions() {
         boogeymanManager.addSessionActions();
         secretSociety.addSessionActions();
+        livesManager.addSessionActions();
     }
 
     /*
@@ -717,6 +733,7 @@ public abstract class Season {
             player.sendSystemMessage(Component.nullToEmpty("After that, use §b'/session start'§f to start the session."));
         }
         boogeymanManager.onPlayerFinishJoining(player);
+        livesManager.onPlayerFinishJoining(player);
     }
 
     public void onPlayerDisconnect(ServerPlayer player) {

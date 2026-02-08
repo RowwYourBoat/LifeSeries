@@ -1,10 +1,13 @@
 package net.mat0u5.lifeseries.network;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.fabric.api.networking.v1.*;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.config.DefaultConfigValues;
+import net.mat0u5.lifeseries.config.StringListManager;
 import net.mat0u5.lifeseries.mixin.ServerLoginPacketListenerImplAccessor;
 import net.mat0u5.lifeseries.network.packets.*;
 import net.mat0u5.lifeseries.seasons.other.LivesManager;
@@ -13,6 +16,7 @@ import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.season.nicelife.NiceLife;
 import net.mat0u5.lifeseries.seasons.season.nicelife.NiceLifeTriviaManager;
 import net.mat0u5.lifeseries.seasons.season.nicelife.NiceLifeVotingManager;
+import net.mat0u5.lifeseries.seasons.season.secretlife.TaskManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.WildLife;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.WildcardManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.Wildcards;
@@ -24,6 +28,8 @@ import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpow
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.SuperpowersWildcard;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.superpower.AnimalDisguise;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.superpower.TripleJump;
+import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaQuestion;
+import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaQuestionManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaWildcard;
 import net.mat0u5.lifeseries.seasons.session.Session;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
@@ -247,7 +253,7 @@ public class NetworkHandlerServer {
                 boolean boolValue = args.get(0).equalsIgnoreCase("true");
                 seasonConfig.setProperty(id,String.valueOf(boolValue));
                 updatedConfigThisTick = true;
-                TaskScheduler.schedulePriorityTask(Time.ticks(1), () -> {
+                TaskScheduler.schedulePriorityTask(1, () -> {
                     ConfigManager.onUpdatedBoolean(id, boolValue);
                 });
             }
@@ -263,7 +269,7 @@ public class NetworkHandlerServer {
                     int value = Integer.parseInt(args.get(0));
                     seasonConfig.setProperty(id, String.valueOf(value));
                     updatedConfigThisTick = true;
-                    TaskScheduler.schedulePriorityTask(Time.ticks(1), () -> {
+                    TaskScheduler.schedulePriorityTask(1, () -> {
                         ConfigManager.onUpdatedInteger(id, value);
                     });
                 }catch(Exception e){}
@@ -425,6 +431,53 @@ public class NetworkHandlerServer {
                     livesManager.updateTeamConfig(packetTeamName, allowedKill, gainLife);
                 }
                 Season.reloadPlayerTeams = true;
+            }
+            if (name == PacketNames.CONFIG_SECRET_TASK) {
+                String type = value.remove(0);
+                try {
+                    StringListManager manager = new StringListManager("./config/lifeseries/secretlife",type+"-tasks.json");
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    manager.setFileContent(gson.toJson(value));
+                }catch(Exception ignored) {}
+                TaskManager.reloadTasks();
+            }
+            if (name == PacketNames.CONFIG_TRIVIA) {
+                String type = value.remove(0);
+                List<TriviaQuestion> triviaQuestions = new ArrayList<>();
+                for (String questionStr : value) {
+                    try {
+                        if (!questionStr.contains("~~~")) continue;
+                        String[] splitQuestion = questionStr.split("~~~");
+                        if (splitQuestion.length < 3) continue;
+                        String questionText = splitQuestion[0];
+                        int correctAnswerIndex = Integer.parseInt(splitQuestion[1]);
+                        List<String> answers = new ArrayList<>();
+                        for (int i = 2; i < splitQuestion.length; i++) {
+                            answers.add(splitQuestion[i]);
+                        }
+                        triviaQuestions.add(new TriviaQuestion(questionText, answers, correctAnswerIndex-1));
+                    }catch(Exception e) {}
+                }
+                TriviaQuestionManager manager = null;
+                if (currentSeason.getSeason() == Seasons.WILD_LIFE) {
+                    if (type.equalsIgnoreCase("easy")) {
+                        manager = TriviaWildcard.easyTrivia;
+                    }
+                    else if (type.equalsIgnoreCase("normal")) {
+                        manager = TriviaWildcard.normalTrivia;
+                    }
+                    else {
+                        manager = TriviaWildcard.hardTrivia;
+                    }
+                }
+                else {
+                    manager = NiceLifeTriviaManager.triviaQuestions;
+                }
+                if (manager == null) return;
+                try {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    manager.setFileContent(gson.toJson(triviaQuestions));
+                }catch(Exception ignored) {}
             }
         }
     }
