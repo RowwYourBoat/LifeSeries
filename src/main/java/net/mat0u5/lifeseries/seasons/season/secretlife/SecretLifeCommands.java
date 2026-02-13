@@ -179,19 +179,6 @@ public class SecretLifeCommands extends Command {
                             )
                     )
         );
-        dispatcher.register(
-            literal("gift")
-                .then(argument("player", EntityArgument.player())
-                    .executes(context -> gift(
-                        context.getSource(), EntityArgument.getPlayer(context, "player"))
-                    )
-                )
-                .then(literal("reset")
-                        .then(argument("player", EntityArgument.players())
-                            .executes(context -> resetGift(context.getSource(), EntityArgument.getPlayers(context, "player")))
-                        )
-                )
-        );
     }
 
     public int getTask(CommandSourceStack source, ServerPlayer player) {
@@ -260,7 +247,7 @@ public class SecretLifeCommands extends Command {
 
             boolean inSession = TaskManager.tasksChosen && !currentSession.statusFinished();
             if (TaskManager.removePlayersTaskBook(player) || inSession) {
-                TaskManager.assignRandomTaskToPlayer(player, taskType);
+                TaskManager.assignRandomTaskToPlayer(player, taskType, false);
                 AnimationUtils.playSecretLifeTotemAnimation(player, taskType == TaskTypes.RED);
                 if (targets.size() == 1) {
                     OtherUtils.sendCommandFeedback(source, TextUtils.format("Changed {}'s task", player));
@@ -389,60 +376,6 @@ public class SecretLifeCommands extends Command {
     }
 
     public static final List<UUID> playersGiven = new ArrayList<>();
-    public int resetGift(CommandSourceStack source, Collection<ServerPlayer> targets) {
-        if (checkBanned(source)) return -1;
-
-        for (ServerPlayer player : targets) {
-            playersGiven.remove(player.getUUID());
-        }
-
-        if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Reset {}'s gifted hearts", targets.iterator().next()));
-        }
-        else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Reset the gifted hearts of {} targets", targets.size()));
-        }
-
-        return 1;
-    }
-    public int gift(CommandSourceStack source, ServerPlayer target) {
-        if (checkBanned(source)) return -1;
-        final ServerPlayer self = source.getPlayer();
-        if (self == null) return -1;
-        if (target == null) return -1;
-        SecretLife secretLife = (SecretLife) currentSeason;
-
-        if (target == self) {
-            source.sendFailure(Component.nullToEmpty("Nice Try."));
-            return -1;
-        }
-        if (playersGiven.contains(self.getUUID())) {
-            source.sendFailure(Component.nullToEmpty("You have already gifted a heart this session"));
-            return -1;
-        }
-        if (target.ls$isDead()) {
-            source.sendFailure(Component.nullToEmpty("That player is not alive"));
-            return -1;
-        }
-        if (!currentSession.statusStarted()) {
-            source.sendFailure(Component.nullToEmpty("The session has not started"));
-            return -1;
-        }
-        playersGiven.add(self.getUUID());
-        secretLife.addPlayerHealth(target, 2);
-        Component senderMessage = TextUtils.format("You have gifted a heart to {}", target);
-        Component recipientMessage = TextUtils.format("{} gave you a heart", self);
-        SessionTranscript.giftHeart(self, target);
-
-        self.sendSystemMessage(senderMessage);
-        PlayerUtils.sendTitle(target, recipientMessage, 20, 20, 20);
-        target.sendSystemMessage(recipientMessage);
-        AnimationUtils.createSpiral(target, 40);
-
-        PlayerUtils.playSoundToPlayers(List.of(self,target), SoundEvent.createVariableRangeEvent(IdentifierHelper.vanilla("secretlife_life")));
-
-        return 1;
-    }
 
     public int showHealth(CommandSourceStack source) {
         if (checkBanned(source)) return -1;

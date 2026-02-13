@@ -205,7 +205,7 @@ public class TaskManager {
         return book;
     }
 
-    public static void assignRandomTaskToPlayer(ServerPlayer player, TaskTypes type) {
+    public static void assignRandomTaskToPlayer(ServerPlayer player, TaskTypes type, boolean assignToSoulmate) {
         if (type != TaskTypes.RED || CONSTANT_TASKS) {
             submittedOrFailed.remove(player.getUUID());
         }
@@ -226,6 +226,14 @@ public class TaskManager {
         }
         assignedTasks.put(player.getUUID(), task);
         DatapackIntegration.setPlayerTask(player, type);
+
+        if (assignToSoulmate) {
+            ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+            if (soulmate == null) { return; }
+
+            assignedTasks.put(soulmate.getUUID(), task);
+            DatapackIntegration.setPlayerTask(soulmate, type);
+        }
     }
 
     public static void assignRandomTasks(List<ServerPlayer> allowedPlayers, TaskTypes type) {
@@ -236,7 +244,7 @@ public class TaskManager {
                 thisType = TaskTypes.EASY;
                 if (player.ls$isOnLastLife(false)) thisType = TaskTypes.RED;
             }
-            assignRandomTaskToPlayer(player, thisType);
+            assignRandomTaskToPlayer(player, thisType, true);
         }
     }
 
@@ -513,7 +521,7 @@ public class TaskManager {
             });
             TaskScheduler.scheduleTask(200, () -> AnimationUtils.playSecretLifeTotemAnimation(player, false));
             TaskScheduler.scheduleTask(240, () -> {
-                assignRandomTaskToPlayer(player, newType);
+                assignRandomTaskToPlayer(player, newType, false);
                 secretKeeperBeingUsed = false;
             });
             DatapackIntegration.EVENT_TASK_REROLL.trigger(new DatapackIntegration.Events.MacroEntry("Player", player.getScoreboardName()));

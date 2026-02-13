@@ -214,7 +214,7 @@ public class DoubleLifeCommands extends Command {
             return -1;
         }
 
-        ServerPlayer soulmate = season.getSoulmate(player);
+        ServerPlayer soulmate = DoubleLife.getSoulmate(player);
         if (soulmate == null) return -1;
 
         OtherUtils.sendCommandFeedback(source, TextUtils.format("{}'s soulmate is {}", player, soulmate));

@@ -300,7 +300,7 @@ public class SecretLife extends Season {
     @Override
     public void onPlayerJoin(ServerPlayer player) {
         if (TaskManager.tasksChosen && !TaskManager.tasksChosenFor.contains(player.getUUID())) {
-            TaskScheduler.scheduleTask(Time.seconds(5), () -> TaskManager.chooseTasks(List.of(player), null));
+            PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§cRemember to give {} a task!", player.getName()));
         }
     }
 
@@ -319,7 +319,6 @@ public class SecretLife extends Season {
     @Override
     public boolean sessionStart() {
         if (TaskManager.checkSecretLifePositions()) {
-            super.sessionStart();
             SecretLifeCommands.playersGiven.clear();
             TaskManager.tasksChosen = false;
             TaskManager.tasksChosenFor.clear();
