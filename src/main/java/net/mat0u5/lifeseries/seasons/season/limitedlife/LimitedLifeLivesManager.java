@@ -26,6 +26,7 @@ public class LimitedLifeLivesManager extends LivesManager {
     public static int YELLOW_TIME = 57600;
     public static int RED_TIME = 28800;
     public static boolean BROADCAST_COLOR_CHANGES = false;
+    public static int TIME_RANDOMIZE_INTERVAL = Time.hours(1).getSeconds();
 
     @Override
     public ChatFormatting getColorForLives(Integer lives) {
@@ -103,7 +104,7 @@ public class LimitedLifeLivesManager extends LivesManager {
         target.ls$playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.MASTER, 10, 1);
         Component amount = Component.literal(LimitedLife.NEW_DEATH_NORMAL.copy().multiply(-1).formatLong());
 
-        if (seasonConfig.GIVELIFE_BROADCAST.get(seasonConfig)) {
+        if (seasonConfig.GIVELIFE_BROADCAST.get()) {
             PlayerUtils.broadcastMessageExcept(TextUtils.format("{} received {} from {}", target, amount, playerName), target);
         }
         target.sendSystemMessage(TextUtils.format("You received {} from {}", amount, playerName));
@@ -118,7 +119,7 @@ public class LimitedLifeLivesManager extends LivesManager {
 
     @Override
     public void addToPlayerLives(ServerPlayer player, int amount) {
-        if (Math.abs(amount) >= 2) {
+        if (Math.abs(amount) >= 2 && !LIVES_SYSTEM_DISABLED) {
             sendTimeTitle(player, Time.seconds(amount), amount < 0 ? ChatFormatting.RED : ChatFormatting.GREEN);
         }
         super.addToPlayerLives(player, amount);
@@ -130,5 +131,25 @@ public class LimitedLifeLivesManager extends LivesManager {
 
     public void sendTimeTitle(ServerPlayer player, Component text) {
         PlayerUtils.sendTitle(player, text, 20, 80, 20);
+    }
+
+    @Override
+    public void reload() {
+        super.reload();
+        TIME_RANDOMIZE_INTERVAL = LimitedLifeConfig.TIME_RANDOMIZE_INTERVAL.get();
+
+    }
+
+    @Override
+    public int getRandomLife() {
+        int minLives = ROLL_MIN_LIVES;
+        int maxLives = ROLL_MAX_LIVES;
+        int interval = TIME_RANDOMIZE_INTERVAL;
+
+        int numIntervals = (maxLives - minLives) / interval;
+
+        int randomInterval = rnd.nextInt(numIntervals + 1);
+
+        return minLives + (interval * randomInterval);
     }
 }

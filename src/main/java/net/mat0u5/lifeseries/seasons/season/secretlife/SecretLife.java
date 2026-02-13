@@ -99,20 +99,21 @@ public class SecretLife extends Season {
 
     @Override
     public void reload() {
-        MAX_HEALTH = seasonConfig.MAX_PLAYER_HEALTH.get(seasonConfig);
-        MAX_KILL_HEALTH = SecretLifeConfig.MAX_PLAYER_KILL_HEALTH.get(seasonConfig);
-        TaskManager.EASY_SUCCESS = SecretLifeConfig.TASK_HEALTH_EASY_PASS.get(seasonConfig);
-        TaskManager.EASY_FAIL = SecretLifeConfig.TASK_HEALTH_EASY_FAIL.get(seasonConfig);
-        TaskManager.HARD_SUCCESS = SecretLifeConfig.TASK_HEALTH_HARD_PASS.get(seasonConfig);
-        TaskManager.HARD_FAIL = SecretLifeConfig.TASK_HEALTH_HARD_FAIL.get(seasonConfig);
-        TaskManager.RED_SUCCESS = SecretLifeConfig.TASK_HEALTH_RED_PASS.get(seasonConfig);
-        TaskManager.RED_FAIL = SecretLifeConfig.TASK_HEALTH_RED_FAIL.get(seasonConfig);
-        TaskManager.ASSIGN_TASKS_MINUTE = SecretLifeConfig.ASSIGN_TASKS_MINUTE.get(seasonConfig);
-        TaskManager.BROADCAST_SECRET_KEEPER = SecretLifeConfig.BROADCAST_SECRET_KEEPER.get(seasonConfig);
-        TaskManager.CONSTANT_TASKS = SecretLifeConfig.CONSTANT_TASKS.get(seasonConfig);
-        TaskManager.PUBLIC_TASKS_ON_SUBMIT = SecretLifeConfig.BROADCAST_TASKS_WHEN_SUBMITTED.get(seasonConfig);
-        ONLY_LOSE_HEARTS_IN_SESSION = SecretLifeConfig.ONLY_LOSE_HEARTS_IN_SESSION.get(seasonConfig);
-        TaskManager.TASKS_NEED_CONFIRMATION = SecretLifeConfig.TASKS_NEED_CONFIRMATION.get(seasonConfig);
+        super.reload();
+        MAX_HEALTH = seasonConfig.MAX_PLAYER_HEALTH.get();
+        MAX_KILL_HEALTH = SecretLifeConfig.MAX_PLAYER_KILL_HEALTH.get();
+        TaskManager.EASY_SUCCESS = SecretLifeConfig.TASK_HEALTH_EASY_PASS.get();
+        TaskManager.EASY_FAIL = SecretLifeConfig.TASK_HEALTH_EASY_FAIL.get();
+        TaskManager.HARD_SUCCESS = SecretLifeConfig.TASK_HEALTH_HARD_PASS.get();
+        TaskManager.HARD_FAIL = SecretLifeConfig.TASK_HEALTH_HARD_FAIL.get();
+        TaskManager.RED_SUCCESS = SecretLifeConfig.TASK_HEALTH_RED_PASS.get();
+        TaskManager.RED_FAIL = SecretLifeConfig.TASK_HEALTH_RED_FAIL.get();
+        TaskManager.ASSIGN_TASKS_MINUTE = SecretLifeConfig.ASSIGN_TASKS_MINUTE.get();
+        TaskManager.BROADCAST_SECRET_KEEPER = SecretLifeConfig.BROADCAST_SECRET_KEEPER.get();
+        TaskManager.CONSTANT_TASKS = SecretLifeConfig.CONSTANT_TASKS.get();
+        TaskManager.PUBLIC_TASKS_ON_SUBMIT = SecretLifeConfig.BROADCAST_TASKS_WHEN_SUBMITTED.get();
+        ONLY_LOSE_HEARTS_IN_SESSION = SecretLifeConfig.ONLY_LOSE_HEARTS_IN_SESSION.get();
+        TaskManager.TASKS_NEED_CONFIRMATION = SecretLifeConfig.TASKS_NEED_CONFIRMATION.get();
     }
 
     @Override
@@ -366,8 +367,11 @@ public class SecretLife extends Season {
             double amountGained = Math.min(Math.max(MAX_KILL_HEALTH, MAX_HEALTH) - getPlayerHealth(killer), 20);
             if (amountGained > 0) {
                 addPlayerHealth(killer, amountGained);
-                double roundedHearts = Math.ceil(amountGained) / 2.0;
-                String text = TextUtils.pluralize(TextUtils.formatString("+{} Heart", roundedHearts), roundedHearts);
+                int roundedGained = (int) Math.ceil(amountGained);
+                double roundedHearts = roundedGained / 2.0;
+                String roundedHeartsStr = String.valueOf(roundedHearts);
+                if (roundedGained % 2 == 0) roundedHeartsStr = String.valueOf((int)roundedHearts);
+                String text = TextUtils.pluralize(TextUtils.formatString("+{} Heart", roundedHeartsStr), roundedHearts);
                 PlayerUtils.sendTitle(killer, Component.literal(text).withStyle(ChatFormatting.RED), 0, 40, 20);
             }
         }
@@ -384,7 +388,7 @@ public class SecretLife extends Season {
     @Override
     public void modifyEntityDrops(LivingEntity entity, DamageSource damageSource, CallbackInfo ci) {
         if (entity instanceof ServerPlayer player) {
-            boolean dropBook = SecretLifeConfig.PLAYERS_DROP_TASK_ON_DEATH.get(seasonConfig);
+            boolean dropBook = SecretLifeConfig.PLAYERS_DROP_TASK_ON_DEATH.get();
             if (dropBook || server == null) return;
             //? if <= 1.21.9 {
             /*boolean keepInventory = OtherUtils.getBooleanGameRule(player.ls$getServerLevel(), GameRules.RULE_KEEPINVENTORY);

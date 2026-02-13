@@ -1,6 +1,5 @@
 package net.mat0u5.lifeseries.seasons.season.nicelife;
 
-import de.maxhenkel.voicechat.api.audiolistener.PlayerAudioListener;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.compatibilities.CompatibilityManager;
 import net.mat0u5.lifeseries.compatibilities.voicechat.VoicechatMain;
@@ -8,10 +7,9 @@ import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.entity.triviabot.TriviaBot;
 import net.mat0u5.lifeseries.entity.triviabot.server.trivia.NiceLifeTriviaHandler;
 import net.mat0u5.lifeseries.mixin.ServerLevelAccessor;
-import net.mat0u5.lifeseries.network.NetworkHandlerServer;
+import net.mat0u5.lifeseries.network.packets.simple.SimplePackets;
 import net.mat0u5.lifeseries.seasons.season.Season;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
-import net.mat0u5.lifeseries.utils.enums.PacketNames;
 import net.mat0u5.lifeseries.utils.other.*;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.minecraft.core.BlockPos;
@@ -19,13 +17,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.SleepStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -105,6 +101,9 @@ public class NiceLife extends Season {
              //?}
             NiceLifeTriviaManager.killAllSnowmen();
             NiceLifeTriviaManager.killAllBots();
+            Season.setSkyColor(null, false);
+            Season.setFogColor(null, false);
+            Season.setCloudColor(null, false);
         }
     }
 
@@ -112,11 +111,11 @@ public class NiceLife extends Season {
     public void reload() {
         super.reload();
         NiceLifeVotingManager.createTeams();
-        LIGHT_MELTS_SNOW = NiceLifeConfig.LIGHT_MELTS_SNOW.get(seasonConfig);
-        SNOW_WHEN_NOT_IN_SESSION = NiceLifeConfig.SNOW_WHEN_NOT_IN_SESSION.get(seasonConfig);
-        SNOW_LAYER_INCREASE_INTERVAL = Time.seconds(NiceLifeConfig.SNOW_LAYER_INCREMENT_DELAY.get(seasonConfig));
-        ADVANCE_TIME_WHEN_NOT_IN_SESSION = NiceLifeConfig.ADVANCE_TIME_WHEN_NOT_IN_SESSION.get(seasonConfig);
-        SNOWY_NETHER = NiceLifeConfig.SNOWY_NETHER.get(seasonConfig);
+        LIGHT_MELTS_SNOW = NiceLifeConfig.LIGHT_MELTS_SNOW.get();
+        SNOW_WHEN_NOT_IN_SESSION = NiceLifeConfig.SNOW_WHEN_NOT_IN_SESSION.get();
+        SNOW_LAYER_INCREASE_INTERVAL = Time.seconds(NiceLifeConfig.SNOW_LAYER_INCREMENT_DELAY.get());
+        ADVANCE_TIME_WHEN_NOT_IN_SESSION = NiceLifeConfig.ADVANCE_TIME_WHEN_NOT_IN_SESSION.get();
+        SNOWY_NETHER = NiceLifeConfig.SNOWY_NETHER.get();
         snowLayerTickChance = 280.0 / Math.max(SNOW_LAYER_INCREASE_INTERVAL.getTicks(), 1);
         if (currentMaxSnowLayers == -1) {
             currentMaxSnowLayers = seasonConfig.getOrCreateInt("current_snow_layers", 1);
@@ -124,14 +123,14 @@ public class NiceLife extends Season {
         updateSnowTick();
         NiceLifeTriviaManager.initialize();
 
-        NiceLifeTriviaManager.QUESTION_TIME = NiceLifeConfig.TRIVIA_QUESTION_TIME.get(seasonConfig);
-        NiceLifeTriviaManager.CAN_BREAK_BEDS = NiceLifeConfig.BOT_CAN_BREAK_BEDS.get(seasonConfig);
-        NiceLifeTriviaManager.BREAKING_DROPS_RESOURCES = NiceLifeConfig.BOT_BREAKING_BLOCKS_DROP_RESOURCES.get(seasonConfig);
-        NiceLifeVotingManager.NICE_LIST_CHANCE = NiceLifeConfig.NICE_LIST_CHANCE.get(seasonConfig);
-        NiceLifeVotingManager.VOTING_TIME = Time.seconds(NiceLifeConfig.VOTING_TIME.get(seasonConfig));
-        NiceLifeVotingManager.REDS_ON_NAUGHTY_LIST = NiceLifeConfig.ALLOW_REDS_ON_NAUGHTY_LIST.get(seasonConfig);
-        NiceLifeVotingManager.NAUGHTY_LIST_COUNT = NiceLifeConfig.NAUGHTY_LIST_PLAYERS.get(seasonConfig);
-        NiceLifeVotingManager.NICE_LIST_COUNT = NiceLifeConfig.NICE_LIST_PLAYERS.get(seasonConfig);
+        NiceLifeTriviaManager.QUESTION_TIME = NiceLifeConfig.TRIVIA_QUESTION_TIME.get();
+        NiceLifeTriviaManager.CAN_BREAK_BEDS = NiceLifeConfig.BOT_CAN_BREAK_BEDS.get();
+        NiceLifeTriviaManager.BREAKING_DROPS_RESOURCES = NiceLifeConfig.BOT_BREAKING_BLOCKS_DROP_RESOURCES.get();
+        NiceLifeVotingManager.NICE_LIST_CHANCE = NiceLifeConfig.NICE_LIST_CHANCE.get();
+        NiceLifeVotingManager.VOTING_TIME = Time.seconds(NiceLifeConfig.VOTING_TIME.get());
+        NiceLifeVotingManager.REDS_ON_NAUGHTY_LIST = NiceLifeConfig.ALLOW_REDS_ON_NAUGHTY_LIST.get();
+        NiceLifeVotingManager.NAUGHTY_LIST_COUNT = NiceLifeConfig.NAUGHTY_LIST_PLAYERS.get();
+        NiceLifeVotingManager.NICE_LIST_COUNT = NiceLifeConfig.NICE_LIST_PLAYERS.get();
     }
 
     public void updateSnowTick() {
@@ -310,7 +309,7 @@ public class NiceLife extends Season {
             PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§cRed winter is here.."), 15, 40, 15);
         });
         TaskScheduler.scheduleTask(20 + 215, () -> {
-            NetworkHandlerServer.sendNumberPackets(PacketNames.FAKE_THUNDER, 7);
+            SimplePackets.FAKE_THUNDER.sendToClient(7);
         });
         TaskScheduler.scheduleTask(20 + 224, () -> {
             Season.setSkyColor(new Vec3(15, -140, -255), false);
@@ -321,9 +320,8 @@ public class NiceLife extends Season {
 
     public boolean shouldRedWinter() {
         if (currentSession.statusNotStarted()) return false;
-        List<ServerPlayer> redPlayers = livesManager.getAlivePlayers();
         List<ServerPlayer> nonRedPlayers = livesManager.getNonRedPlayers();
-        return !redPlayers.isEmpty() && nonRedPlayers.isEmpty();
+        return nonRedPlayers.isEmpty();
     }
 
     public void sleepThroughNight() {
@@ -352,7 +350,7 @@ public class NiceLife extends Season {
             if (player.isSleeping()) {
                 player.stopSleepInBed(false, true);
             }
-            NetworkHandlerServer.sendStringPacket(player, PacketNames.REMOVE_SLEEP_SCREENS, "");
+            SimplePackets.REMOVE_SLEEP_SCREENS.target(player).sendToClient();
         }
     }
 
@@ -586,8 +584,10 @@ public class NiceLife extends Season {
     @Override
     public void onPlayerDeath(ServerPlayer player, DamageSource source) {
         super.onPlayerDeath(player, source);
+        player.removeTag("naughty_list");
         NiceLifeVotingManager.naughtyListMembers.remove(player.getUUID());
         if (player.ls$isDead()) {
+            player.removeTag("nice_list");
             NiceLifeVotingManager.niceListMembers.remove(player.getUUID());
         }
         reloadPlayerTeam(player);

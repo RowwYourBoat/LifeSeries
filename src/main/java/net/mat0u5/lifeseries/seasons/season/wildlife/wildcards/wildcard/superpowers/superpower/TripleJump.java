@@ -1,6 +1,8 @@
 package net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.superpower;
 
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
+import net.mat0u5.lifeseries.network.packets.simple.SimplePackets;
+import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.TimeDilation;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.Superpowers;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.ToggleableSuperpower;
 import net.mat0u5.lifeseries.utils.other.Time;
@@ -67,6 +69,7 @@ public class TripleJump extends ToggleableSuperpower {
         if (player == null) return;
         player.ls$playNotifySound(SoundEvents.SLIME_JUMP, SoundSource.MASTER, 1, 1);
         NetworkHandlerServer.sendVignette(player, -1);
+        SimplePackets.TRIPLE_JUMP.target(player).sendToClient(true);
     }
 
     @Override
@@ -81,5 +84,6 @@ public class TripleJump extends ToggleableSuperpower {
         //?}
         player.ls$playNotifySound(SoundEvents.SLIME_SQUISH, SoundSource.MASTER, 1, 1);
         NetworkHandlerServer.sendVignette(player, 0);
+        SimplePackets.TRIPLE_JUMP.target(player).sendToClient(false);
     }
 }

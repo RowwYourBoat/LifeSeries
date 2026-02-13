@@ -2,13 +2,13 @@ package net.mat0u5.lifeseries.seasons.season.limitedlife;
 
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
+import net.mat0u5.lifeseries.network.packets.simple.SimplePackets;
 import net.mat0u5.lifeseries.seasons.boogeyman.BoogeymanManager;
 import net.mat0u5.lifeseries.seasons.other.LivesManager;
 import net.mat0u5.lifeseries.seasons.season.Season;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.secretsociety.SecretSociety;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
-import net.mat0u5.lifeseries.utils.enums.PacketNames;
 import net.mat0u5.lifeseries.utils.enums.SessionTimerStates;
 import net.mat0u5.lifeseries.utils.other.Time;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.Collection;
+import java.util.List;
 
 //? if <= 1.20.2
 //import net.minecraft.world.scores.Score;
@@ -94,7 +95,7 @@ public class LimitedLife extends Season {
                     timestamp = Time.now().add(remainingTime).getMillis();
                 }
                 if (timestamp != SessionTimerStates.OFF.getValue()) {
-                    NetworkHandlerServer.sendLongPacket(player, PacketNames.SESSION_TIMER, timestamp);
+                    SimplePackets.SESSION_TIMER.target(player).sendToClient(timestamp);
                 }
 
                 if (player.ls$hasAssignedLives() && player.ls$getLives() != null) {
@@ -107,7 +108,7 @@ public class LimitedLife extends Season {
                         playerLives = -1;
                     }
                     String livesColor = livesManager.getColorForLives(player).toString();
-                    NetworkHandlerServer.sendLongPacket(player, PacketNames.fromName(PacketNames.LIMITED_LIFE_TIMER.getName()+livesColor), playerLives);
+                    SimplePackets.LIMITED_LIFE_TIMER.target(player).sendToClient(List.of(livesColor, String.valueOf(playerLives)));
                 }
             }
             else {
@@ -246,17 +247,17 @@ public class LimitedLife extends Season {
 
     @Override
     public void reload() {
-        SHOW_TIME_BELOW_NAME = LimitedLifeConfig.SHOW_TIME_BELOW_NAME.get(seasonConfig);
+        SHOW_TIME_BELOW_NAME = LimitedLifeConfig.SHOW_TIME_BELOW_NAME.get();
         super.reload();
-        LimitedLifeLivesManager.DEFAULT_TIME = LimitedLifeConfig.TIME_DEFAULT.get(seasonConfig);
-        LimitedLifeLivesManager.YELLOW_TIME = LimitedLifeConfig.TIME_YELLOW.get(seasonConfig);
-        LimitedLifeLivesManager.RED_TIME = LimitedLifeConfig.TIME_RED.get(seasonConfig);
-        NEW_DEATH_NORMAL = Time.seconds(LimitedLifeConfig.TIME_DEATH.get(seasonConfig));
-        NEW_DEATH_BOOGEYMAN = Time.seconds(LimitedLifeConfig.TIME_DEATH_BOOGEYMAN.get(seasonConfig));
-        NEW_KILL_NORMAL = Time.seconds(LimitedLifeConfig.TIME_KILL.get(seasonConfig));
-        NEW_KILL_BOOGEYMAN = Time.seconds(LimitedLifeConfig.TIME_KILL_BOOGEYMAN.get(seasonConfig));
-        TICK_OFFLINE_PLAYERS = LimitedLifeConfig.TICK_OFFLINE_PLAYERS.get(seasonConfig);
-        LimitedLifeLivesManager.BROADCAST_COLOR_CHANGES = LimitedLifeConfig.BROADCAST_COLOR_CHANGES.get(seasonConfig);
+        LimitedLifeLivesManager.DEFAULT_TIME = LimitedLifeConfig.TIME_DEFAULT.get();
+        LimitedLifeLivesManager.YELLOW_TIME = LimitedLifeConfig.TIME_YELLOW.get();
+        LimitedLifeLivesManager.RED_TIME = LimitedLifeConfig.TIME_RED.get();
+        NEW_DEATH_NORMAL = Time.seconds(LimitedLifeConfig.TIME_DEATH.get());
+        NEW_DEATH_BOOGEYMAN = Time.seconds(LimitedLifeConfig.TIME_DEATH_BOOGEYMAN.get());
+        NEW_KILL_NORMAL = Time.seconds(LimitedLifeConfig.TIME_KILL.get());
+        NEW_KILL_BOOGEYMAN = Time.seconds(LimitedLifeConfig.TIME_KILL_BOOGEYMAN.get());
+        TICK_OFFLINE_PLAYERS = LimitedLifeConfig.TICK_OFFLINE_PLAYERS.get();
+        LimitedLifeLivesManager.BROADCAST_COLOR_CHANGES = LimitedLifeConfig.BROADCAST_COLOR_CHANGES.get();
     }
 
     @Override

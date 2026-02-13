@@ -2,6 +2,7 @@ package net.mat0u5.lifeseries.seasons.season.wildlife.wildcards;
 
 import net.mat0u5.lifeseries.entity.triviabot.server.trivia.WildLifeTriviaHandler;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
+import net.mat0u5.lifeseries.network.packets.simple.SimplePackets;
 import net.mat0u5.lifeseries.seasons.season.wildlife.WildLife;
 import net.mat0u5.lifeseries.seasons.season.wildlife.morph.MorphManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.*;
@@ -13,7 +14,6 @@ import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpow
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.superpowers.superpower.TimeControl;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaWildcard;
 import net.mat0u5.lifeseries.seasons.session.SessionAction;
-import net.mat0u5.lifeseries.utils.enums.PacketNames;
 import net.mat0u5.lifeseries.utils.other.TaskScheduler;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
 import net.mat0u5.lifeseries.utils.other.Time;
@@ -228,7 +228,7 @@ public class WildcardManager {
 
         for (UUID uuid : WildLifeTriviaHandler.cursedSliding) {
             ServerPlayer player = PlayerUtils.getPlayer(uuid);
-            NetworkHandlerServer.sendLongPacket(player, PacketNames.CURSE_SLIDING, System.currentTimeMillis());
+            SimplePackets.CURSE_SLIDING.target(player).sendToClient(System.currentTimeMillis());
         }
     }
 
@@ -242,7 +242,7 @@ public class WildcardManager {
     public static void onSessionStart() {
         if (chosenWildcard == null && activeWildcards.isEmpty()) {
             for (ServerPlayer player : PlayerUtils.getAdminPlayers()) {
-                NetworkHandlerServer.sendStringPacket(player, PacketNames.SELECT_WILDCARDS, "true");
+                SimplePackets.SELECT_WILDCARDS.target(player).sendToClient();
             }
         }
     }
