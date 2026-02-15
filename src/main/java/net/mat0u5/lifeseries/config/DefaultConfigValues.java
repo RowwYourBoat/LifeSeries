@@ -138,14 +138,6 @@ public class DefaultConfigValues {
             "blacklist_recipes", "[]", ConfigTypes.ITEM_LIST, "global.blacklist",
             "Blacklisted Recipes", "List of banned recipes - items you can't craft."
     );
-    public final ConfigFileEntry<String> FINAL_DEATH_TITLE_SUBTITLE = new ConfigFileEntry<>(
-            "final_death_title_subtitle", "ran out of lives!", "global.finaldeath",
-            "Death Subtitle", "The subtitle that shows when a player dies (requires Show Death Title on Final Death to be set to true)."
-    );
-    public final ConfigFileEntry<String> FINAL_DEATH_MESSAGE = new ConfigFileEntry<>(
-            "final_death_message", "${player} ran out of lives.", "global.finaldeath",
-            "Final Death Message", "The message that gets shown in chat when a player fully dies."
-    );
     public final ConfigFileEntry<Boolean> FINAL_DEATH_LIGHTNING = new ConfigFileEntry<>(
             "final_death_lightning", true, "global.finaldeath",
             "Final Death Lightning", "Spawns a harmless (no damage) lightning strike when a player fully dies."
@@ -209,9 +201,6 @@ public class DefaultConfigValues {
     public final ConfigFileEntry<String> BOOGEYMAN_FORCE = new ConfigFileEntry<>(
             "boogeyman_force", "[]", "global.boogeyman",
             "Boogeyman Force List", "A list of players that are forced to become the boogeyman."
-    );
-    public final ConfigFileEntry<String> BOOGEYMAN_MESSAGE = new ConfigFileEntry<>(
-            "boogeyman_message", "§7You are the Boogeyman. You must by any means necessary kill a §2dark green§7, §agreen§7 or §eyellow§7 name by direct action to be cured of the curse. If you fail, you will become a §cred name§7. All loyalties and friendships are removed while you are the Boogeyman.", "global.boogeyman", "Boogeyman Message", "The message that shows up when you become a Boogeyman."
     );
     public final ConfigFileEntry<Double> BOOGEYMAN_CHANCE_MULTIPLIER = new ConfigFileEntry<>(
             "boogeyman_chance_multiplier", 0.5, ConfigTypes.PERCENTAGE, "global.boogeyman",
@@ -405,6 +394,10 @@ public class DefaultConfigValues {
     public final ConfigFileEntry<Object> GROUP_EVENTS = new ConfigFileEntry<>(
             "group_events", null, ConfigTypes.TEXT, "{events}",
             "Events", ""
+    );
+    public final ConfigFileEntry<Object> GROUP_TEXTS = new ConfigFileEntry<>(
+            "group_texts", null, ConfigTypes.TEXT, "{text}[new]",
+            "Modifiable Texts", ""
     );
 
 

@@ -270,7 +270,7 @@ public class PlayerUtils {
     }
     public static void displayMessageToPlayer(ServerPlayer player, Component text, int timeFor) {
         Session.skipTimer.put(player.getUUID(), timeFor/5);
-        player.displayClientMessage(text, true);
+        player.ls$message(text, true);
     }
 
     public static List<UUID> updateInventoryQueue = new ArrayList<>();
@@ -424,14 +424,14 @@ public class PlayerUtils {
 
     public static void broadcastMessage(List<ServerPlayer> players, Component message) {
         for (ServerPlayer player : players) {
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
     }
 
     public static void broadcastMessageExcept(Component message, ServerPlayer exceptPlayer) {
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
             if (player == exceptPlayer) continue;
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
     }
 
@@ -440,7 +440,7 @@ public class PlayerUtils {
         broadcastCooldown.put(message, cooldownTicks);
 
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
     }
 
@@ -449,7 +449,7 @@ public class PlayerUtils {
         broadcastCooldown.put(message, cooldownTicks);
 
         for (ServerPlayer player : PlayerUtils.getAdminPlayers()) {
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
         Main.LOGGER.info(message.getString());
     }
@@ -505,7 +505,7 @@ public class PlayerUtils {
     public static void broadcastToVisiblePlayers(ServerPlayer broadcaster, Component message) {
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
             if (hidePlayerFrom(player, broadcaster)) continue;
-            player.sendSystemMessage(message);
+            player.ls$message(message);
         }
     }
 

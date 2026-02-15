@@ -12,7 +12,7 @@ import net.minecraft.client.input.KeyEvent;
 //?}
 
 public abstract class TextFieldConfigEntry extends ConfigEntry {
-    protected final EditBox textField;
+    public final EditBox textField;
     private static final int DEFAULT_TEXT_FIELD_WIDTH = 100;
     protected static final int DEFAULT_TEXT_FIELD_HEIGHT = 18;
     private static final int TEXT_FIELD_OFFSET_X = -5;
@@ -81,7 +81,7 @@ public abstract class TextFieldConfigEntry extends ConfigEntry {
 
     protected int getTextFieldPosY(int y, int height) {
         //return y + (height - textField.getHeight()) / 2; CENTER
-        return y+TEXT_FIELD_OFFSET_Y;
+        return y+(height-textField.getHeight())/2;
     }
 
     @Override

@@ -1,8 +1,6 @@
 package net.mat0u5.lifeseries.config;
 
 import net.mat0u5.lifeseries.Main;
-import net.mat0u5.lifeseries.entity.triviabot.server.trivia.NiceLifeTriviaHandler;
-import net.mat0u5.lifeseries.entity.triviabot.server.trivia.WildLifeTriviaHandler;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
 import net.mat0u5.lifeseries.network.packets.ConfigPayload;
 import net.mat0u5.lifeseries.seasons.other.LivesManager;
@@ -11,7 +9,6 @@ import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.season.nicelife.NiceLifeTriviaManager;
 import net.mat0u5.lifeseries.seasons.season.secretlife.TaskManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaQuestion;
-import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaQuestionManager;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard.trivia.TriviaWildcard;
 import net.mat0u5.lifeseries.utils.enums.ConfigTypes;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
@@ -28,6 +25,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
+
+//? if <= 1.20.2
+//import net.minecraft.world.scores.Score;
 //? if > 1.20.2
 import net.minecraft.world.scores.PlayerScoreEntry;
 
@@ -65,6 +65,7 @@ public abstract class ConfigManager extends DefaultConfigValues {
                 ,GROUP_LIVES
                 ,GROUP_TEAMS
                 ,GROUP_EVENTS
+                ,GROUP_TEXTS
 
                 , GROUP_GLOBAL_LIVES // Group
                 ,DEFAULT_LIVES
@@ -133,7 +134,6 @@ public abstract class ConfigManager extends DefaultConfigValues {
                 ,BOOGEYMAN_CHANCE_MULTIPLIER
                 ,BOOGEYMAN_IGNORE
                 ,BOOGEYMAN_FORCE
-                ,BOOGEYMAN_MESSAGE
                 ,BOOGEYMAN_CHOOSE_MINUTE
                 ,BOOGEYMAN_ANNOUNCE_OUTCOME
                     ,BOOGEYMAN_INFINITE // Group
@@ -155,8 +155,6 @@ public abstract class ConfigManager extends DefaultConfigValues {
 
                 ,PLAYERS_DROP_ITEMS_ON_FINAL_DEATH
                 ,FINAL_DEATH_TITLE_SHOW
-                ,FINAL_DEATH_TITLE_SUBTITLE
-                ,FINAL_DEATH_MESSAGE
                 ,FINAL_DEATH_LIGHTNING
                 ,FINAL_DEATH_SOUND
 
@@ -346,6 +344,10 @@ public abstract class ConfigManager extends DefaultConfigValues {
                 index++;
             }
         }
+        for (Map.Entry<String, ConfigFileEntry<String>> entry : ModifiableTextManager.getRegisteredEntries().entrySet()) {
+            sendConfigEntry(player, entry.getValue(), index);
+            index++;
+        }
     }
 
     public void sendConfigEntry(ServerPlayer player, ConfigFileEntry<?> entry, int index) {
@@ -396,6 +398,8 @@ public abstract class ConfigManager extends DefaultConfigValues {
         renamedProperty("beoadcast_secret_keeper", "broadcast_secret_keeper");
         renamedProperty("blacklist_clamped_enchants", "blacklist_clamped_enchants_level_1");
         renamedProperty("wildcard_superpowers_zombies_lose_items", "wildcard_superpowers_zombies_first_spawn_clear_items");
+        renamedProperty("boogeyman_message", "text.boogeyman.message");
+        renamedProperty("final_death_title_subtitle", "text.final.death.title.subtitle");
     }
 
     private void renamedProperty(String from, String to) {

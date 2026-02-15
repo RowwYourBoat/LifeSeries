@@ -4,6 +4,8 @@ import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.command.manager.Command;
 import net.mat0u5.lifeseries.command.manager.CommandManager;
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.config.ModifiableText;
+import net.mat0u5.lifeseries.config.ModifiableTextManager;
 import net.mat0u5.lifeseries.entity.snail.Snail;
 import net.mat0u5.lifeseries.entity.triviabot.TriviaBot;
 import net.mat0u5.lifeseries.events.Events;
@@ -62,7 +64,7 @@ import static net.mat0u5.lifeseries.Main.*;
 import static net.mat0u5.lifeseries.seasons.other.WatcherManager.isWatcher;
 
 //? if <= 1.20
-/*import net.minecraft.world.scores.Scoreboard;*/
+//import net.minecraft.world.scores.Scoreboard;
 //? if <= 1.21.9
 //import net.minecraft.world.level.GameRules;
 //? if > 1.21.9
@@ -138,10 +140,17 @@ public abstract class Season {
     }
 
     public void initialize() {
+        ModifiableTextManager.initialize();
         reload();
     }
 
     public void seasonSwitched(Seasons changedTo) {
+        if (changedTo != getSeason()) {
+            switchOutOfSeason(changedTo);
+        }
+    }
+    public void switchOutOfSeason(Seasons changedTo) {
+
     }
 
     public void reloadStart() {
@@ -576,7 +585,7 @@ public abstract class Season {
 
     public void broadcastLifeGain(ServerPlayer player, ServerPlayer victim) {
         if (BROADCAST_LIFE_GAIN) {
-            PlayerUtils.broadcastMessage(TextUtils.format("{}§7 gained a life for killing {}.", player, victim));
+            PlayerUtils.broadcastMessage(ModifiableText.SEASON_KILL_GAINLIFE.get(player, victim));
         }
     }
 
@@ -601,7 +610,7 @@ public abstract class Season {
         boolean isBoogeyCure = boogeymanManager.isBoogeymanThatCanBeCured(killer, victim);
 
         if (!isAllowedToAttack(killer, victim) && !HIDE_UNJUSTIFIED_KILL_MESSAGES) {
-            PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§c [Unjustified Kill?] {}§7 was killed by {}", victim, killer));
+            PlayerUtils.broadcastMessageToAdmins(ModifiableText.SEASON_KILL_UNJUSTIFIED.get(victim, killer));
         }
 
         if (isBoogeyCure) {
@@ -721,17 +730,16 @@ public abstract class Season {
     public void onPlayerFinishJoining(ServerPlayer player) {
         if (getSeason() != Seasons.UNASSIGNED && SHOW_LOGIN_COMMAND_INFO && !Main.modDisabled()) {
             if (PermissionManager.isAdmin(player)) {
-                player.sendSystemMessage(TextUtils.formatLoosely("§7{} commands: §r{}", getSeason().getName(), getAdminCommands()));
+                player.ls$message(ModifiableText.SEASON_COMMANDS_ADMIN.get(getSeason().getName(), getAdminCommands()));
             }
             else {
-                player.sendSystemMessage(TextUtils.formatLoosely("§7{} non-admin commands: §r{}", getSeason().getName(), getNonAdminCommands()));
+                player.ls$message(ModifiableText.SEASON_COMMANDS.get(getSeason().getName(), getNonAdminCommands()));
             }
         }
 
         learnRecipes();
         if (currentSession.statusNotStarted() && PermissionManager.isAdmin(player) && !Main.modDisabled()) {
-            player.sendSystemMessage(Component.nullToEmpty("\nUse §b'/session timer set <time>'§f to set the desired session time."));
-            player.sendSystemMessage(Component.nullToEmpty("After that, use §b'/session start'§f to start the session."));
+            player.ls$message(ModifiableText.SESSION_START_PROMPT.get());
         }
         boogeymanManager.onPlayerFinishJoining(player);
         livesManager.onPlayerFinishJoining(player);

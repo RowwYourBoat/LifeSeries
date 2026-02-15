@@ -1,5 +1,6 @@
 package net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.wildcard;
 
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.Wildcard;
 import net.mat0u5.lifeseries.seasons.season.wildlife.wildcards.WildcardManager;
@@ -256,7 +257,7 @@ public class Hunger extends Wildcard {
         SessionTranscript.newHungerRule();
         if (shuffledBefore) {
             PlayerUtils.playSoundToPlayers(players, SoundEvents.NOTE_BLOCK_PLING.value());
-            PlayerUtils.sendTitleWithSubtitleToPlayers(players, Component.empty(), Component.nullToEmpty("§7Food is about to be randomised..."), 0, 140, 0);
+            PlayerUtils.sendTitleWithSubtitleToPlayers(players, ModifiableText.WILDLIFE_HUNGER_RANDOMIZE_TITLE.get(), ModifiableText.WILDLIFE_HUNGER_RANDOMIZE_SUBTITLE.get(), 0, 140, 0);
             TaskScheduler.scheduleTask(Time.seconds(2), WildcardManager::showDots);
             TaskScheduler.scheduleTask(Time.seconds(7), () -> {
                 addHunger();
@@ -332,10 +333,10 @@ public class Hunger extends Wildcard {
         if (item == null) return;
         if (bannedFoodItems.contains(item)) return;
         //? if <= 1.20.5 {
-        components.set(DataComponents.FOOD, new FoodProperties(0, 0, false, 1.6f, List.of()));
-        //?} else {
-        /^components.set(DataComponents.FOOD, new FoodProperties(0, 0, false, 1.6f, Optional.empty(), List.of()));
-        ^///?}
+        /^components.set(DataComponents.FOOD, new FoodProperties(0, 0, false, 1.6f, List.of()));
+        ^///?} else {
+        components.set(DataComponents.FOOD, new FoodProperties(0, 0, false, 1.6f, Optional.empty(), List.of()));
+        //?}
     }
     *///?} else if > 1.21 {
     public static void defaultFoodComponents(Item item, PatchedDataComponentMap components) {

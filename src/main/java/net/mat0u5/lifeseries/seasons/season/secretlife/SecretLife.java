@@ -1,6 +1,7 @@
 package net.mat0u5.lifeseries.seasons.season.secretlife;
 
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.seasons.season.Season;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.session.SessionAction;
@@ -31,6 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.*;
 
 import static net.mat0u5.lifeseries.Main.*;
+import static net.mat0u5.lifeseries.Main.livesManager;
 
 //? if <= 1.20.5 {
 /*import net.minecraft.world.item.EnchantedBookItem;
@@ -55,7 +57,7 @@ import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class SecretLife extends Season {
-    public static double MAX_HEALTH = 20.0d;
+    public static double MAX_HEALTH = 60.0d;
     public static double MAX_KILL_HEALTH = 1000.0d;
     public static boolean ONLY_LOSE_HEARTS_IN_SESSION = false;
 
@@ -63,13 +65,13 @@ public class SecretLife extends Season {
     SessionAction taskWarningAction = new SessionAction(Time.minutes(-5).add(Time.seconds(1))) {
         @Override
         public void trigger() {
-            PlayerUtils.broadcastMessage(Component.literal("Go submit / fail your secret tasks if you haven't!").withStyle(ChatFormatting.GRAY));
+            PlayerUtils.broadcastMessage(ModifiableText.SECRETLIFE_TASK_WARNING_5MIN.get());
         }
     };
     SessionAction taskWarningAction2 = new SessionAction(Time.minutes(-30).add(Time.seconds(1))) {
         @Override
         public void trigger() {
-            PlayerUtils.broadcastMessage(Component.literal("You better start finishing your secret tasks if you haven't already!").withStyle(ChatFormatting.GRAY));
+            PlayerUtils.broadcastMessage(ModifiableText.SECRETLIFE_TASK_WARNING_30MIN.get());
         }
     };
 
@@ -332,7 +334,13 @@ public class SecretLife extends Season {
 
     @Override
     public void addSessionActions() {
-        currentSession.addSessionAction(TaskManager.getActionChooseTasks());
+        currentSession.addSessionAction(new SessionAction(Time.minutes(TaskManager.ASSIGN_TASKS_MINUTE), ModifiableText.SESSION_ACTION_TASKS.getString()) {
+            @Override
+            public void trigger() {
+                TaskManager.chooseTasks(livesManager.getAlivePlayers(), null);
+                TaskManager.tasksChosen = true;
+            }
+        });
         currentSession.addSessionActionIfTime(taskWarningAction);
         currentSession.addSessionActionIfTime(taskWarningAction2);
     }
@@ -350,7 +358,7 @@ public class SecretLife extends Season {
         if (!playersWithTaskBooks.isEmpty()) {
             boolean isOne = playersWithTaskBooks.size() == 1;
             String playerNames = String.join(", ", playersWithTaskBooks);
-            PlayerUtils.broadcastMessageToAdmins(TextUtils.formatLoosely("§4{}§c still {} not submitted / failed a task this session.", playerNames, (isOne?"has":"have")));
+            PlayerUtils.broadcastMessageToAdmins(ModifiableText.SECRETLIFE_TASK_NOT_SUBMITTED.get(playerNames, (isOne?"has":"have")));
         }
     }
 
@@ -371,8 +379,7 @@ public class SecretLife extends Season {
                 double roundedHearts = roundedGained / 2.0;
                 String roundedHeartsStr = String.valueOf(roundedHearts);
                 if (roundedGained % 2 == 0) roundedHeartsStr = String.valueOf((int)roundedHearts);
-                String text = TextUtils.pluralize(TextUtils.formatString("+{} Heart", roundedHeartsStr), roundedHearts);
-                PlayerUtils.sendTitle(killer, Component.literal(text).withStyle(ChatFormatting.RED), 0, 40, 20);
+                PlayerUtils.sendTitle(killer, ModifiableText.SECRETLIFE_HEART_GAIN.get(roundedHeartsStr, TextUtils.pluralize("Heart", roundedHearts)), 0, 40, 20);
             }
         }
     }

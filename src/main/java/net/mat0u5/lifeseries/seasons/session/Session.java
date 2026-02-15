@@ -1,6 +1,7 @@
 package net.mat0u5.lifeseries.seasons.session;
 
 import net.mat0u5.lifeseries.Main;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.events.Events;
 import net.mat0u5.lifeseries.mixin.MobEffectInstanceAccessor;
 import net.mat0u5.lifeseries.network.NetworkHandlerServer;
@@ -49,13 +50,13 @@ public class Session {
     SessionAction endWarning1 = new SessionAction(Time.minutes(-5)) {
         @Override
         public void trigger() {
-            PlayerUtils.broadcastMessage(Component.literal("Session ends in 5 minutes!").withStyle(ChatFormatting.GOLD));
+            PlayerUtils.broadcastMessage(ModifiableText.SESSION_WARNING_5MIN.get());
         }
     };
     SessionAction endWarning2 = new SessionAction(Time.minutes(-30)) {
         @Override
         public void trigger() {
-            PlayerUtils.broadcastMessage(Component.literal("Session ends in 30 minutes!").withStyle(ChatFormatting.GOLD));
+            PlayerUtils.broadcastMessage(ModifiableText.SESSION_WARNING_30MIN.get());
         }
     };
     SessionAction actionInfoAction = new SessionAction(Time.seconds(7)) {
@@ -75,15 +76,15 @@ public class Session {
         }
         else {
             sessionStartInProgress = 150;
-            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§a3"), 15, 35, 15);
+            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.COUNTDOWN_COLOR_3.get(), 15, 35, 15);
             TaskScheduler.schedulePriorityTask(50, () -> {
-                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§e2"), 15, 35, 15);
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.COUNTDOWN_COLOR_2.get(), 15, 35, 15);
             });
             TaskScheduler.schedulePriorityTask(100, () -> {
-                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§c1"), 15, 35, 15);
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.COUNTDOWN_COLOR_1.get(), 15, 35, 15);
             });
             TaskScheduler.schedulePriorityTask(150, () -> {
-                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§aThe timer has begun!"), 15, 35, 15);
+                PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.SESSION_START_TITLE.get(), 15, 35, 15);
                 startSession();
             });
         }
@@ -95,10 +96,7 @@ public class Session {
         passedTime = Time.zero();
         fullPassedTime = Time.zero();
         DatapackIntegration.setSessionTimePassed(getPassedTime());
-        Component line1 = TextUtils.formatLoosely("§6Session started! §7[{}]", sessionLength.formatLong());
-        Component line2 = Component.literal("§f/session timer showDisplay§7 - toggles a session timer on your screen.");
-        PlayerUtils.broadcastMessage(line1);
-        PlayerUtils.broadcastMessage(line2);
+        PlayerUtils.broadcastMessage(ModifiableText.SESSION_STARTED.get(sessionLength.formatLong()));
 
         addSessionActionIfTime(endWarning1);
         addSessionActionIfTime(endWarning2);
@@ -129,7 +127,7 @@ public class Session {
         SessionTranscript.sessionEnd();
         if (status != SessionStatus.FINISHED && status != SessionStatus.NOT_STARTED) {
             SessionTranscript.onSessionEnd();
-            PlayerUtils.broadcastMessage(Component.literal("The session has ended!").withStyle(ChatFormatting.GOLD));
+            PlayerUtils.broadcastMessage(ModifiableText.SESSION_ENDED.get());
         }
         changeStatus(SessionStatus.FINISHED);
         passedTime = Time.zero();
@@ -141,14 +139,14 @@ public class Session {
 
     public void sessionPause() {
         if (statusPaused()) {
-            PlayerUtils.broadcastMessage(Component.literal("Session unpaused!").withStyle(ChatFormatting.GOLD));
+            PlayerUtils.broadcastMessage(ModifiableText.SESSION_UNPAUSING.get());
             changeStatus(SessionStatus.STARTED);
             if (isInQueuedPause()) {
                 discardCurrentQueuedPause();
             }
         }
         else {
-            PlayerUtils.broadcastMessage(Component.literal("Session paused!").withStyle(ChatFormatting.GOLD));
+            PlayerUtils.broadcastMessage(ModifiableText.SESSION_PAUSED.get());
             changeStatus(SessionStatus.PAUSED);
         }
     }
@@ -436,18 +434,18 @@ public class Session {
             return;
         }
 
-        String message = "";
+        Component message = Component.empty();
         if (statusNotStarted()) {
-            message = "Session has not started";
+            message = ModifiableText.SESSION_TIMER_DISPLAY_NOTSTARTED.get();
         }
         else if (statusStarted()) {
-            message = getRemainingTimeStr();
+            message = ModifiableText.SESSION_TIMER_DISPLAY.get(getRemainingTimeStr());
         }
         else if (statusPaused()) {
-            message = "Session has been paused";
+            message = ModifiableText.SESSION_TIMER_DISPLAY_PAUSE.get();
         }
         else if (statusFinished()) {
-            message = "Session has ended";
+            message = ModifiableText.SESSION_TIMER_DISPLAY_END.get();
         }
 
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
@@ -462,7 +460,7 @@ public class Session {
                 }
 
                 if (!NetworkHandlerServer.wasHandshakeSuccessful(player)) {
-                    player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.GRAY), true);
+                    player.ls$message(message, true);
                 }
             }
             if (NetworkHandlerServer.wasHandshakeSuccessful(player)) {
@@ -491,13 +489,13 @@ public class Session {
             if (actionMessage == null) continue;
             if (actionMessage.isEmpty()) continue;
             if (messages.isEmpty()) {
-                messages.add(Component.nullToEmpty("§7Queued session actions:"));
+                messages.add(ModifiableText.SESSION_ACTIONS.get());
             }
             if (action.showTime) {
-                messages.add(TextUtils.formatLoosely("§7- {} §f[{}]", actionMessage, action.getTriggerTime().formatLong()));
+                messages.add(ModifiableText.SESSION_ACTION_ENTRY_LONG.get(actionMessage, action.getTriggerTime().formatLong()));
             }
             else {
-                messages.add(TextUtils.formatLoosely("§7- {}", actionMessage));
+                messages.add(ModifiableText.SESSION_ACTION_ENTRY.get(actionMessage));
             }
         }
 

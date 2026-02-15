@@ -3,6 +3,7 @@ package net.mat0u5.lifeseries.utils.other;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import net.mat0u5.lifeseries.Main;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.events.Events;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.minecraft.commands.CommandSourceStack;
@@ -33,7 +34,7 @@ public class OtherUtils {
 
     public static void log(Component message) {
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
         Main.LOGGER.info(message.getString());
     }
@@ -41,7 +42,7 @@ public class OtherUtils {
     public static void log(String string) {
         Component message = Component.nullToEmpty(string);
         for (ServerPlayer player : PlayerUtils.getAllPlayers()) {
-            player.displayClientMessage(message, false);
+            player.ls$message(message);
         }
         Main.LOGGER.info(string);
     }
@@ -137,12 +138,25 @@ public class OtherUtils {
 
     public static void sendCommandFeedback(CommandSourceStack source, Component text) {
         if (source == null || text == null) return;
+        if (text.getString().isEmpty()) return;
         source.sendSuccess(() -> text, true);
     }
 
     public static void sendCommandFeedbackQuiet(CommandSourceStack source, Component text) {
         if (source == null || text == null) return;
+        if (text.getString().isEmpty()) return;
         source.sendSuccess(() -> text, false);
+    }
+    public static void sendCommandFailure(CommandSourceStack source, Component text) {
+        sendCommandFailure(source, text, false);
+    }
+    public static void sendCommandFailure(CommandSourceStack source, Component text, boolean keepFormatting) {
+        if (keepFormatting) {
+            source.sendFailure(text);
+        }
+        else {
+            source.sendFailure(Component.literal(text.getString()));
+        }
     }
 
     public static UUID profileId(GameProfile profile) {
@@ -208,10 +222,10 @@ public class OtherUtils {
         serverTickRateManager.setFrozen(frozen);
 
         if (frozen) {
-            PlayerUtils.broadcastMessageToAdmins(Component.nullToEmpty("§7The game is frozen"));
+            PlayerUtils.broadcastMessageToAdmins(ModifiableText.TICK_FREEZE.get());
         }
         else {
-            PlayerUtils.broadcastMessageToAdmins(Component.nullToEmpty("§7The game is no longer frozen."));
+            PlayerUtils.broadcastMessageToAdmins(ModifiableText.TICK_UNFREEZE.get());
         }
         //?}
     }

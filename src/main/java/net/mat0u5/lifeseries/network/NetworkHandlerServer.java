@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.*;
 import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.config.ConfigManager;
 import net.mat0u5.lifeseries.config.DefaultConfigValues;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.config.StringListManager;
 import net.mat0u5.lifeseries.mixin.ServerLoginPacketListenerImplAccessor;
 import net.mat0u5.lifeseries.network.packets.*;
@@ -108,7 +109,7 @@ public class NetworkHandlerServer {
             }
         });
         SimplePackets.TRANSCRIPT.setServerReceive((player, payload) -> {
-            player.sendSystemMessage(SessionTranscript.getTranscriptMessage());
+            player.ls$message(SessionTranscript.getTranscriptMessage());
         });
         SimplePackets.SELECTED_WILDCARD.setServerReceive((player, payload) -> {
             if (PermissionManager.isAdmin(player)) {
@@ -125,7 +126,7 @@ public class NetworkHandlerServer {
                 boolean prevTickFreeze = Session.TICK_FREEZE_NOT_IN_SESSION;
                 if (Main.changeSeasonTo(newSeason.getId())) {
                     boolean currentTickFreeze = Session.TICK_FREEZE_NOT_IN_SESSION;
-                    PlayerUtils.broadcastMessage(TextUtils.formatLoosely("§aSuccessfully changed the season to {}.", payload.value()));
+                    PlayerUtils.broadcastMessage(ModifiableText.SEASON_CHANGE.get(payload.value()));
                     if (prevTickFreeze != currentTickFreeze) {
                         OtherUtils.setFreezeGame(currentTickFreeze);
                     }
@@ -529,7 +530,7 @@ public class NetworkHandlerServer {
     }
 
     public static void onUpdatedConfig() {
-        PlayerUtils.broadcastMessageToAdmins(Component.nullToEmpty("§7Config has been successfully updated."));
+        PlayerUtils.broadcastMessageToAdmins(ModifiableText.CONFIG_UPDATED.get());
         if (configNeedsReload) {
             OtherUtils.reloadServer();
             //PlayerUtils.broadcastMessageToAdmins(Text.of("Run §7'/lifeseries reload'§r to apply all the changes."));

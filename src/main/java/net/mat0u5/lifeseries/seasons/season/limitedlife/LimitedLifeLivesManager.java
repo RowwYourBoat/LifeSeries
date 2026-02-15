@@ -1,5 +1,6 @@
 package net.mat0u5.lifeseries.seasons.season.limitedlife;
 
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.seasons.other.LivesManager;
 import net.mat0u5.lifeseries.seasons.season.doublelife.DoubleLife;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
@@ -75,8 +76,8 @@ public class LimitedLifeLivesManager extends LivesManager {
                 PlayerUtils.safelyPutIntoSurvival(player);
             }
             if (lives > 0 && colorBefore != null && livesBefore != null && BROADCAST_COLOR_CHANGES) {
-                Component livesText = TextUtils.format("{} name", colorNow.getName().replaceAll("_", " ").toLowerCase(Locale.ROOT)).withStyle(colorNow);
-                PlayerUtils.broadcastMessage(TextUtils.format("{}§7 is now a {}§7.", player, livesText));
+                Component colorText = Component.literal(colorNow.getName().replaceAll("_", " ").toLowerCase(Locale.ROOT)).withStyle(colorNow);
+                PlayerUtils.broadcastMessage(ModifiableText.LIMITEDLIFE_CHANGE_COLOR.get(player, colorText));
             }
         }
         currentSeason.reloadPlayerTeam(player);
@@ -105,10 +106,12 @@ public class LimitedLifeLivesManager extends LivesManager {
         Component amount = Component.literal(LimitedLife.NEW_DEATH_NORMAL.copy().multiply(-1).formatLong());
 
         if (seasonConfig.GIVELIFE_BROADCAST.get()) {
-            PlayerUtils.broadcastMessageExcept(TextUtils.format("{} received {} from {}", target, amount, playerName), target);
+            PlayerUtils.broadcastMessageExcept(ModifiableText.GIVELIFE_RECEIVE_OTHER.get(target, amount, playerName), target);
         }
-        target.sendSystemMessage(TextUtils.format("You received {} from {}", amount, playerName));
-        PlayerUtils.sendTitleWithSubtitle(target, TextUtils.format("You received {}", amount), TextUtils.format("from {}", playerName), 10, 60, 10);
+        target.ls$message(ModifiableText.GIVELIFE_RECEIVE_SELF.get(amount, playerName));
+        PlayerUtils.sendTitleWithSubtitle(target, ModifiableText.GIVELIFE_RECEIVE_SELF_TITLE.get(amount), ModifiableText.GIVELIFE_RECEIVE_SELF_TITLE_SUBTITLE.get(playerName), 10, 60, 10);
+
+
         AnimationUtils.createSpiral(target, 175);
         currentSeason.reloadPlayerTeam(target);
         SessionTranscript.givelife(playerName, target);

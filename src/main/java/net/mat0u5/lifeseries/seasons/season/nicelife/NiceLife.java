@@ -4,6 +4,7 @@ import net.mat0u5.lifeseries.Main;
 import net.mat0u5.lifeseries.compatibilities.CompatibilityManager;
 import net.mat0u5.lifeseries.compatibilities.voicechat.VoicechatMain;
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.entity.triviabot.TriviaBot;
 import net.mat0u5.lifeseries.entity.triviabot.server.trivia.NiceLifeTriviaHandler;
 import net.mat0u5.lifeseries.mixin.ServerLevelAccessor;
@@ -91,20 +92,18 @@ public class NiceLife extends Season {
     }
 
     @Override
-    public void seasonSwitched(Seasons changedTo) {
-        if (changedTo != Seasons.NICE_LIFE) {
-            if (server == null) return;
-            //? if <= 1.21.9 {
-            /*OtherUtils.setBooleanGameRule(server.overworld(), GameRules.RULE_DAYLIGHT, true);
-            *///?} else {
-            OtherUtils.setBooleanGameRule(server.overworld(), GameRules.ADVANCE_TIME, true);
-             //?}
-            NiceLifeTriviaManager.killAllSnowmen();
-            NiceLifeTriviaManager.killAllBots();
-            Season.setSkyColor(null, false);
-            Season.setFogColor(null, false);
-            Season.setCloudColor(null, false);
-        }
+    public void switchOutOfSeason(Seasons changedTo) {
+        if (server == null) return;
+        //? if <= 1.21.9 {
+        /*OtherUtils.setBooleanGameRule(server.overworld(), GameRules.RULE_DAYLIGHT, true);
+        *///?} else {
+        OtherUtils.setBooleanGameRule(server.overworld(), GameRules.ADVANCE_TIME, true);
+         //?}
+        NiceLifeTriviaManager.killAllSnowmen();
+        NiceLifeTriviaManager.killAllBots();
+        Season.setSkyColor(null, false);
+        Season.setFogColor(null, false);
+        Season.setCloudColor(null, false);
     }
 
     @Override
@@ -180,7 +179,7 @@ public class NiceLife extends Season {
         if (!isMidnight()) {
             for(ServerPlayer serverPlayer : PlayerUtils.getAllPlayers()) {
                 if (serverPlayer.isSleeping()) {
-                    serverPlayer.displayClientMessage(Component.nullToEmpty("You are too excited to fall asleep"), true);
+                    serverPlayer.ls$message(ModifiableText.NICELIFE_SLEEP_FAIL_EARLY.get(), true);
                 }
             }
             if (!playedMidnightChimes && isTimeBetween(18000-23*20, 20000)) {
@@ -303,10 +302,10 @@ public class NiceLife extends Season {
                     1f, 1);
         });
         TaskScheduler.scheduleTask(20 + 12, () -> {
-            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§eThe last yellow falls.."), 15, 65, 15);
+            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.NICELIFE_REDWINTER_PT1.get(), 15, 65, 15);
         });
         TaskScheduler.scheduleTask(20 + 108, () -> {
-            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), Component.literal("§cRed winter is here.."), 15, 40, 15);
+            PlayerUtils.sendTitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.NICELIFE_REDWINTER_PT2.get(), 15, 40, 15);
         });
         TaskScheduler.scheduleTask(20 + 215, () -> {
             SimplePackets.FAKE_THUNDER.sendToClient(7);

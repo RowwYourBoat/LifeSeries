@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.mat0u5.lifeseries.command.manager.Command;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
@@ -86,30 +87,29 @@ public class SubInCommands extends Command {
         //?}
         }
         if (targetProfile == null) {
-            source.sendFailure(Component.nullToEmpty("Failed to fetch target profile"));
-            source.sendFailure(Component.nullToEmpty("Make sure the target player has logged on the server at least once"));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_FETCH.get());
             return -1;
         }
 
         ServerPlayer targetPlayer = PlayerUtils.getPlayer(target);
         if (targetPlayer != null) {
-            source.sendFailure(Component.nullToEmpty("Online players cannot be subbed in for"));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_ONLINE.get());
             return -1;
         }
 
         if (SubInManager.isSubbingIn(player.getUUID())) {
             GameProfile profile = SubInManager.getSubstitutedPlayer(player.getUUID());
-            source.sendFailure(TextUtils.formatPlain("{} is already subbing in for {}", player, OtherUtils.profileName(profile)));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_ALREADY_SUBBING.get(player, OtherUtils.profileName(profile)));
             return -1;
         }
 
         if (SubInManager.isBeingSubstituted(OtherUtils.profileId(targetProfile))) {
             GameProfile profile = SubInManager.getSubstitutingPlayer(OtherUtils.profileId(targetProfile));
-            source.sendFailure(TextUtils.formatPlain("{} is already being subbed in for by {}", target, OtherUtils.profileName(profile)));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_ALREADY_SUBBED.get(target, OtherUtils.profileName(profile)));
             return -1;
         }
 
-        OtherUtils.sendCommandFeedback(source, TextUtils.format("{} is now subbing in for {}", player, target));
+        OtherUtils.sendCommandFeedback(source, ModifiableText.SUBIN_START.get(player, target));
         SubInManager.addSubIn(player, targetProfile);
 
         return 1;
@@ -119,13 +119,13 @@ public class SubInCommands extends Command {
         if (checkBanned(source)) return -1;
 
         if (!SubInManager.isSubbingIn(player.getUUID())) {
-            source.sendFailure(TextUtils.formatPlain("{} is not subbing in for anyone", player));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_MISSING.get(player));
             return -1;
         }
 
         GameProfile profile = SubInManager.getSubstitutedPlayer(player.getUUID());
 
-        OtherUtils.sendCommandFeedback(source, TextUtils.format("{} is no longer subbing in for {}", player, OtherUtils.profileName(profile)));
+        OtherUtils.sendCommandFeedback(source, ModifiableText.SUBIN_STOP.get(player, OtherUtils.profileName(profile)));
         SubInManager.removeSubIn(player);
         return 1;
     }
@@ -134,14 +134,14 @@ public class SubInCommands extends Command {
         if (checkBanned(source)) return -1;
 
         if (SubInManager.subIns.isEmpty()) {
-            source.sendFailure(Component.nullToEmpty("There are no sub ins yet"));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SUBIN_ERROR_NONE.get());
             return -1;
         }
 
-        OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("§7Current sub ins:"));
+        OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SUBIN_CURRENT.get());
 
         for (SubInManager.SubIn subIn : SubInManager.subIns) {
-            OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.formatLoosely(" §7{} is subbinng in for {}", OtherUtils.profileName(subIn.substituter()), OtherUtils.profileName(subIn.target())));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SUBIN_LIST_ENTRY.get(OtherUtils.profileName(subIn.substituter()), OtherUtils.profileName(subIn.target())));
         }
 
         return 1;

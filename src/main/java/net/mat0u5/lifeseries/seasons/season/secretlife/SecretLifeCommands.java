@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.mat0u5.lifeseries.command.manager.Command;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
@@ -187,7 +188,7 @@ public class SecretLifeCommands extends Command {
         boolean hasTaskBook = TaskManager.hasTaskBookCheck(player, false);
 
         if (!hasTaskBook && !hasPreassignedTask) {
-            source.sendSystemMessage(TextUtils.formatPlain("{} does not have a task book in their inventory nor a pre-assigned task", player));
+            source.sendSystemMessage(ModifiableText.SECRETLIFE_TASK_MISSING_OTHER.get(player));
             return -1;
         }
 
@@ -195,19 +196,19 @@ public class SecretLifeCommands extends Command {
         Task task = null;
 
         if (hasTaskBook) {
-            OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("{} has a task book in their inventory", player));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_TASK_PRESENT.get(player));
             if (TaskManager.assignedTasks.containsKey(player.getUUID())) {
                 task = TaskManager.assignedTasks.get(player.getUUID());
             }
         }
         else {
             //Pre-assigned task
-            OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("{} has a pre-assigned task", player));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_TASK_PREASSIGNED.get(player));
             task = TaskManager.preAssignedTasks.get(player.getUUID());
         }
 
         if (task == null) {
-            source.sendFailure(Component.nullToEmpty("Failed to read task contents"));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SECRETLIFE_TASK_READFAIL.get(player));
             return -1;
         }
 
@@ -219,7 +220,7 @@ public class SecretLifeCommands extends Command {
         }
 
         if (!rawTask.isEmpty()) {
-            OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("§7Click {}§7 to show the task they have.", TextUtils.selfMessageText(rawTask)));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_TASK_SHOW.get(TextUtils.selfMessageText(rawTask)));
         }
 
         return 1;
@@ -247,17 +248,16 @@ public class SecretLifeCommands extends Command {
                 TaskManager.assignRandomTaskToPlayer(player, taskType);
                 AnimationUtils.playSecretLifeTotemAnimation(player, taskType == TaskTypes.RED);
                 if (targets.size() == 1) {
-                    OtherUtils.sendCommandFeedback(source, TextUtils.format("Changed {}'s task", player));
+                    OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SET.get(player));
                 }
             }
             else if (targets.size() == 1) {
-                OtherUtils.sendCommandFeedback(source, TextUtils.format("Pre-assigned {}'s task for randomization", player));
-                OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("§7They will be given the task book once you / the game rolls the tasks"));
+                OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_PREASSIGN.get(player));
             }
         }
 
         if (targets.size() != 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Changed or pre-assigned task of {} targets", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SET_MULTIPLE.get(targets.size()));
         }
 
         return 1;
@@ -265,7 +265,7 @@ public class SecretLifeCommands extends Command {
 
     public int changeLocations(CommandSourceStack source) {
         if (checkBanned(source)) return -1;
-        OtherUtils.sendCommandFeedback(source, Component.nullToEmpty("Changing Secret Life locations..."));
+        OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_LOCATIONS.get());
         TaskManager.deleteLocations();
         TaskManager.checkSecretLifePositions();
         return 1;
@@ -283,14 +283,14 @@ public class SecretLifeCommands extends Command {
         }
 
         if (affected.isEmpty()) {
-            source.sendFailure(Component.nullToEmpty("No task books were found"));
+            OtherUtils.sendCommandFailure(source, ModifiableText.SECRETLIFE_TASK_ERROR_BOOK_MISSING.get());
             return -1;
         }
         if (affected.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Removed task book from {}", affected.get(0)));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_REMOVE_SINGLE.get(affected.get(0)));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Removed task book from {} targets", affected.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_REMOVE_MULTIPLE.get(affected.size()));
         }
         return 1;
     }
@@ -301,10 +301,10 @@ public class SecretLifeCommands extends Command {
         if (!TaskManager.checkSecretLifePositions()) return -1;
 
         if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Assigning random task to {}", targets.iterator().next()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SET_RANDOM_SINGLE.get(targets.iterator().next()));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Assigning random tasks to {} targets", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SET_RANDOM_MULTIPLE.get(targets.size()));
         }
 
         TaskManager.chooseTasks(targets.stream().toList(), null);
@@ -319,10 +319,10 @@ public class SecretLifeCommands extends Command {
         if (!TaskManager.checkSecretLifePositions()) return -1;
 
         if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Succeeding task for {}§7...", targets.iterator().next()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SUCCESS_SINGLE.get(targets.iterator().next()));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Succeeding task for {}§7 targets...", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_SUCCESS_MULTIPLE.get(targets.size()));
         }
 
         for (ServerPlayer player : targets) {
@@ -339,10 +339,10 @@ public class SecretLifeCommands extends Command {
         if (!TaskManager.checkSecretLifePositions()) return -1;
 
         if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Failing task for {}§7...", targets.iterator().next()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_FAIL_SINGLE.get(targets.iterator().next()));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Failing task for {}§7 targets...", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_FAIL_MULTIPLE.get(targets.size()));
         }
 
         for (ServerPlayer player : targets) {
@@ -359,10 +359,10 @@ public class SecretLifeCommands extends Command {
         if (!TaskManager.checkSecretLifePositions()) return -1;
 
         if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Rerolling task for {}§7...", targets.iterator().next()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_REROLL_SINGLE.get(targets.iterator().next()));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("§7Rerolling task for {}§7 targets...", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_TASK_REROLL_MULTIPLE.get(targets.size()));
         }
 
         for (ServerPlayer player : targets) {
@@ -384,12 +384,12 @@ public class SecretLifeCommands extends Command {
         SecretLife secretLife = (SecretLife) currentSeason;
 
         if (self.ls$isDead()) {
-            OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("You're dead..."));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_HEALTH_GET_SELF_DEAD.get());
             return -1;
         }
 
         double playerHealth = secretLife.getRoundedHealth(self);
-        OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("You have {} health", playerHealth));
+        OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_HEALTH_GET_SELF.get(playerHealth));
 
         return 1;
     }
@@ -399,18 +399,18 @@ public class SecretLifeCommands extends Command {
         if (targets == null) return -1;
 
         if (targets.size() > 1) {
-            OtherUtils.sendCommandFeedbackQuiet(source, Component.nullToEmpty("Health of targets:"));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_HEALTH_GET_LIST.get());
         }
 
         for (ServerPlayer player : targets) {
             SecretLife secretLife = (SecretLife) currentSeason;
             if (player.ls$isDead()) {
-                OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("{} is dead", player));
+                OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_HEALTH_GET_OTHER_DEAD.get(player));
                 continue;
             }
 
             double playerHealth = secretLife.getRoundedHealth(player);
-            OtherUtils.sendCommandFeedbackQuiet(source, TextUtils.format("{} has {} health", player, playerHealth));
+            OtherUtils.sendCommandFeedbackQuiet(source, ModifiableText.SECRETLIFE_HEALTH_GET_OTHER.get(player, playerHealth));
         }
 
         return 1;
@@ -433,10 +433,10 @@ public class SecretLifeCommands extends Command {
                 secretLife.setPlayerHealth(player, amount);
             }
             if (targets.size() == 1) {
-                OtherUtils.sendCommandFeedback(source, TextUtils.format("Set {}'s health to {}", targets.iterator().next(), amount));
+                OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_SET_SINGLE.get(targets.iterator().next(), amount));
             }
             else {
-                OtherUtils.sendCommandFeedback(source, TextUtils.format("Set the health of {} targets to {}", targets.size(), amount));
+                OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_SET_MULTIPLE.get(targets.size(), amount));
             }
         }
         else {
@@ -446,10 +446,10 @@ public class SecretLifeCommands extends Command {
             String addOrRemove = amount >= 0 ? "Added" : "Removed";
             String toOrFrom = amount >= 0 ? "to" : "from";
             if (targets.size() == 1) {
-                OtherUtils.sendCommandFeedback(source, TextUtils.format("{} {} health {} {}", addOrRemove, Math.abs(amount), toOrFrom, targets.iterator().next()));
+                OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_MODIFY_SINGLE.get(addOrRemove, Math.abs(amount), toOrFrom, targets.iterator().next()));
             }
             else {
-                OtherUtils.sendCommandFeedback(source, TextUtils.format("{} {} health {} {} targets", addOrRemove, Math.abs(amount), toOrFrom, targets.size()));
+                OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_MODIFY_MULTIPLE.get(addOrRemove, Math.abs(amount), toOrFrom, targets.size()));
             }
         }
 
@@ -466,10 +466,10 @@ public class SecretLifeCommands extends Command {
         }
 
         if (targets.size() == 1) {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Reset {}'s health to the default", targets.iterator().next()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_RESET_SINGLE.get(targets.iterator().next()));
         }
         else {
-            OtherUtils.sendCommandFeedback(source, TextUtils.format("Reset the health to default for {} targets", targets.size()));
+            OtherUtils.sendCommandFeedback(source, ModifiableText.SECRETLIFE_HEALTH_RESET_MULTIPLE.get(targets.size()));
         }
 
         return 1;

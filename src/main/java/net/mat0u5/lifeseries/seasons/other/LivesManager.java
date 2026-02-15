@@ -1,6 +1,6 @@
 package net.mat0u5.lifeseries.seasons.other;
 
-import net.mat0u5.lifeseries.network.NetworkHandlerServer;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.network.packets.simple.SimplePackets;
 import net.mat0u5.lifeseries.seasons.boogeyman.advanceddeaths.AdvancedDeathsManager;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
@@ -26,7 +26,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Score;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -34,6 +33,8 @@ import java.util.*;
 import static net.mat0u5.lifeseries.Main.*;
 import static net.mat0u5.lifeseries.seasons.other.WatcherManager.isWatcher;
 
+        //? if <= 1.20.2
+//import net.minecraft.world.scores.Score;
 //? if > 1.20.2
 import net.minecraft.world.scores.PlayerScoreEntry;
 
@@ -51,12 +52,6 @@ public class LivesManager {
     public int ROLL_MAX_LIVES = 6;
 
     public boolean assignedLives = false;
-    public SessionAction actionChooseLives = new SessionAction(Time.minutes(1),"Assign lives if necessary") {
-        @Override
-        public void trigger() {
-            assignRandomLivesToUnassignedPlayers();
-        }
-    };
     public Random rnd = new Random();
 
     public void reload() {
@@ -327,10 +322,10 @@ public class LivesManager {
     public void receiveLifeFromOtherPlayer(Component playerName, ServerPlayer target, boolean isRevive) {
         target.ls$playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.MASTER, 10, 1);
         if (seasonConfig.GIVELIFE_BROADCAST.get()) {
-            PlayerUtils.broadcastMessageExcept(TextUtils.format("{} received a life from {}", target, playerName), target);
+            PlayerUtils.broadcastMessageExcept(ModifiableText.GIVELIFE_RECEIVE_OTHER.get(target, playerName), target);
         }
-        target.sendSystemMessage(TextUtils.format("You received a life from {}", playerName));
-        PlayerUtils.sendTitleWithSubtitle(target, Component.nullToEmpty("You received a life"), TextUtils.format("from {}", playerName), 10, 60, 10);
+        target.ls$message(ModifiableText.GIVELIFE_RECEIVE_SELF.get(playerName));
+        PlayerUtils.sendTitleWithSubtitle(target, ModifiableText.GIVELIFE_RECEIVE_SELF_TITLE.get(), ModifiableText.GIVELIFE_RECEIVE_SELF_TITLE_SUBTITLE.get(playerName), 10, 60, 10);
         AnimationUtils.createSpiral(target, 175);
         currentSeason.reloadPlayerTeam(target);
         SessionTranscript.givelife(playerName, target);
@@ -438,21 +433,12 @@ public class LivesManager {
 
     public void showDeathTitle(ServerPlayer player) {
         if (SHOW_DEATH_TITLE) {
-            String subtitle = seasonConfig.FINAL_DEATH_TITLE_SUBTITLE.get();
-            PlayerUtils.sendTitleWithSubtitleToPlayers(PlayerUtils.getAllPlayers(), player.getDisplayName(), Component.literal(subtitle), 20, 80, 20);
+            PlayerUtils.sendTitleWithSubtitleToPlayers(PlayerUtils.getAllPlayers(), ModifiableText.FINAL_DEATH_TITLE.get(player), ModifiableText.FINAL_DEATH_TITLE_SUBTITLE.get(), 20, 80, 20);
         }
-        Component deathMessage = getDeathMessage(player);
+        Component deathMessage = ModifiableText.FINAL_DEATH.get(player);
         if (!deathMessage.getString().isEmpty()) {
             PlayerUtils.broadcastMessage(deathMessage);
         }
-    }
-
-    public Component getDeathMessage(ServerPlayer player) {
-        String message = seasonConfig.FINAL_DEATH_MESSAGE.get();
-        if (message.contains("${player}")) {
-            return TextUtils.format(message.replace("${player}", "{}"), player);
-        }
-        return Component.literal(message);
     }
 
     public List<ServerPlayer> getNonAssignedPlayers() {
@@ -515,7 +501,12 @@ public class LivesManager {
 
     public void addSessionActions() {
         if (ROLL_LIVES) {
-            currentSession.addSessionAction(actionChooseLives);
+            currentSession.addSessionAction(new SessionAction(Time.minutes(1), ModifiableText.SESSION_ACTION_ASSIGN_LIVES.getString()) {
+                @Override
+                public void trigger() {
+                    assignRandomLivesToUnassignedPlayers();
+                }
+            });
         }
     }
 
@@ -533,7 +524,7 @@ public class LivesManager {
 
     public void assignRandomLives(List<ServerPlayer> players) {
         players.forEach(this::resetPlayerLife);
-        PlayerUtils.sendTitleToPlayers(players, Component.literal("You will have...").withStyle(ChatFormatting.GRAY), 10, 40, 10);
+        PlayerUtils.sendTitleToPlayers(players, ModifiableText.LIVES_RANDOMIZE_TITLE.get(), 10, 40, 10);
         TaskScheduler.scheduleTask(Time.seconds(3), ()-> rollLives(players));
     }
 
@@ -574,8 +565,8 @@ public class LivesManager {
             for (Map.Entry<ServerPlayer, Integer> playerEntry : lives.entrySet()) {
                 Integer livesNum = playerEntry.getValue();
                 ServerPlayer player = playerEntry.getKey();
-                String livesOrTime = currentSeason.getSeason() == Seasons.LIMITED_LIFE ? "to live" : TextUtils.pluralize("life","lives", livesNum);
-                Component textLives = TextUtils.format("{}§a {}.", getFormattedLives(livesNum), livesOrTime);
+                String lifeOrLives = TextUtils.pluralize("life","lives", livesNum);
+                Component textLives = ModifiableText.LIVES_RANDOMIZE_RESULT.get(getFormattedLives(livesNum), lifeOrLives);
                 PlayerUtils.sendTitle(player, textLives, 0, 60, 20);
                 SessionTranscript.assignRandomLives(player, livesNum);
                 setPlayerLives(player, livesNum);
@@ -636,8 +627,7 @@ public class LivesManager {
         if (!assignedLives) return;
         if (hasAssignedLives(player)) return;
         if (player.ls$isWatcher()) return;
-        String livesOrTime = currentSeason.getSeason() == Seasons.LIMITED_LIFE ? "times" : "lives";
-        PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§7Assigning random {} to {}§7...", livesOrTime, player));
+        PlayerUtils.broadcastMessageToAdmins(ModifiableText.LIVES_RANDOMIZE_SINGLE.get(player));
         assignRandomLives(new ArrayList<>(List.of(player)));
     }
 }
