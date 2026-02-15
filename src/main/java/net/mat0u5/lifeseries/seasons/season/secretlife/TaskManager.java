@@ -205,12 +205,14 @@ public class TaskManager {
         return book;
     }
 
-    public static void assignRandomTaskToPlayer(ServerPlayer player, TaskTypes type, boolean assignToSoulmate) {
+    public static void assignRandomTaskToPlayer(ServerPlayer player, TaskTypes type) {
         if (type != TaskTypes.RED || CONSTANT_TASKS) {
             submittedOrFailed.remove(player.getUUID());
         }
 
-        removePlayersTaskBook(player);
+        ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+        if (soulmate != null && tasksChosenFor.contains(soulmate.getUUID())) return;
+
         if (player.ls$isDead()) return;
         Task task;
         if (preAssignedTasks.containsKey(player.getUUID())) {
@@ -220,23 +222,28 @@ public class TaskManager {
         else {
             task = getRandomTask(player, type);
         }
+
+        assignTaskToPlayer(player, task);
+        if (soulmate == null) { return; }
+        assignTaskToPlayer(soulmate, task);
+    }
+
+    private static void assignTaskToPlayer(ServerPlayer player, Task task) {
+        removePlayersTaskBook(player, true);
+
         ItemStack book = getTaskBook(player, task);
         if (!player.addItem(book)) {
             ItemStackUtils.spawnItemForPlayer(player.ls$getServerLevel(), player.position(), book, player);
         }
+
         assignedTasks.put(player.getUUID(), task);
-        DatapackIntegration.setPlayerTask(player, type);
-
-        if (assignToSoulmate) {
-            ServerPlayer soulmate = DoubleLife.getSoulmate(player);
-            if (soulmate == null) { return; }
-
-            assignedTasks.put(soulmate.getUUID(), task);
-            DatapackIntegration.setPlayerTask(soulmate, type);
-        }
+        tasksChosenFor.add(player.getUUID());
+        DatapackIntegration.setPlayerTask(player, task.type);
     }
 
     public static void assignRandomTasks(List<ServerPlayer> allowedPlayers, TaskTypes type) {
+        removeFromTasksChosenFor(allowedPlayers);
+
         for (ServerPlayer player : allowedPlayers) {
             if (player.ls$isDead()) continue;
             TaskTypes thisType = type;
@@ -244,17 +251,27 @@ public class TaskManager {
                 thisType = TaskTypes.EASY;
                 if (player.ls$isOnLastLife(false)) thisType = TaskTypes.RED;
             }
-            assignRandomTaskToPlayer(player, thisType, true);
+            assignRandomTaskToPlayer(player, thisType);
+        }
+    }
+
+    public static void removeFromTasksChosenFor(ServerPlayer player) {
+        TaskManager.tasksChosenFor.remove(player.getUUID());
+
+        ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+        if (soulmate != null) {
+            TaskManager.tasksChosenFor.remove(soulmate.getUUID());
+        }
+    }
+
+    public static void removeFromTasksChosenFor(Collection<ServerPlayer> targets) {
+        for (ServerPlayer target : targets) {
+            removeFromTasksChosenFor(target);
         }
     }
 
     public static void chooseTasks(List<ServerPlayer> allowedPlayers, TaskTypes type) {
         secretKeeperBeingUsed = true;
-        for (ServerPlayer player : allowedPlayers) {
-            if (!tasksChosenFor.contains(player.getUUID())) {
-                tasksChosenFor.add(player.getUUID());
-            }
-        }
         PlayerUtils.sendTitleToPlayers(allowedPlayers, Component.literal("Your secret is...").withStyle(ChatFormatting.RED),20,35,0);
 
         TaskScheduler.scheduleTask(40, () -> {
@@ -297,15 +314,23 @@ public class TaskManager {
         return false;
     }
 
-    public static boolean removePlayersTaskBook(ServerPlayer player) {
+    public static boolean removePlayersTaskBook(ServerPlayer player, boolean fromSoulmate) {
         boolean success = false;
         for (ItemStack item : PlayerUtils.getPlayerInventory(player)) {
             if (ItemStackUtils.hasCustomComponentEntry(item,"SecretTask")) {
                 PlayerUtils.clearItemStack(player, item);
                 success = true;
+
+                if (!fromSoulmate) continue;
+
+                ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+                if (soulmate != null) {
+                    removePlayersTaskBook(soulmate, false);
+                }
             }
         }
         DatapackIntegration.setPlayerTask(player, null);
+
         return success;
     }
 
@@ -449,7 +474,13 @@ public class TaskManager {
             PlayerUtils.broadcastMessage(getShowTaskMessage(player));
         }
         SessionTranscript.successTask(player);
-        removePlayersTaskBook(player);
+        removePlayersTaskBook(player, true);
+
+        ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+        if (soulmate != null) {
+            submittedOrFailed.add(soulmate.getUUID());
+        }
+
         submittedOrFailed.add(player.getUUID());
         secretKeeperBeingUsed = true;
 
@@ -489,7 +520,7 @@ public class TaskManager {
             return;
         }
         if (type == TaskTypes.EASY) {
-            removePlayersTaskBook(player);
+            removePlayersTaskBook(player, true);
             if (BROADCAST_SECRET_KEEPER) {
                 PlayerUtils.broadcastMessage(TextUtils.format("{}§7 re-rolled their easy task.", player));
             }
@@ -521,7 +552,8 @@ public class TaskManager {
             });
             TaskScheduler.scheduleTask(200, () -> AnimationUtils.playSecretLifeTotemAnimation(player, false));
             TaskScheduler.scheduleTask(240, () -> {
-                assignRandomTaskToPlayer(player, newType, false);
+                removeFromTasksChosenFor(player);
+                assignRandomTaskToPlayer(player, newType);
                 secretKeeperBeingUsed = false;
             });
             DatapackIntegration.EVENT_TASK_REROLL.trigger(new DatapackIntegration.Events.MacroEntry("Player", player.getScoreboardName()));
@@ -553,7 +585,13 @@ public class TaskManager {
             PlayerUtils.broadcastMessage(getShowTaskMessage(player));
         }
         SessionTranscript.failTask(player);
-        removePlayersTaskBook(player);
+        removePlayersTaskBook(player, true);
+
+        ServerPlayer soulmate = DoubleLife.getSoulmate(player);
+        if (soulmate != null) {
+            submittedOrFailed.add(soulmate.getUUID());
+        }
+
         submittedOrFailed.add(player.getUUID());
         secretKeeperBeingUsed = true;
 

@@ -209,7 +209,7 @@ public class DoubleLifeCommands extends Command {
             source.sendFailure(TextUtils.formatPlain("{} does not have a soulmate", player));
             return -1;
         }
-        if (!season.isSoulmateOnline(player)) {
+        if (!DoubleLife.isSoulmateOnline(player)) {
             source.sendFailure(TextUtils.formatPlain("{} 's soulmate is not online right now", player));
             return -1;
         }

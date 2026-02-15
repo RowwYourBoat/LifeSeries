@@ -130,10 +130,7 @@ public class DoubleLife extends Season {
         if (player == null) return;
         this.secretLife.onPlayerJoin(player);
 
-        if (!hasSoulmate(player)) {
-            PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§cRemember to assign a soulmate to {}!", player.getName()));
-            return;
-        }
+        if (!hasSoulmate(player)) return;
         if (!isSoulmateOnline(player)) return;
 
         syncPlayer(player);
@@ -282,7 +279,7 @@ public class DoubleLife extends Season {
         return soulmates.containsKey(playerUUID);
     }
 
-    public boolean isSoulmateOnline(ServerPlayer player) {
+    public static boolean isSoulmateOnline(ServerPlayer player) {
         return isSoulmateOnline(player.getUUID());
     }
 

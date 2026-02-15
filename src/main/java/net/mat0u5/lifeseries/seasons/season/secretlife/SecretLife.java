@@ -397,7 +397,7 @@ public class SecretLife extends Season {
             //?}
             if (keepInventory) return;
             giveBookOnRespawn.put(player.getUUID(), TaskManager.getPlayersTaskBook(player));
-            TaskManager.removePlayersTaskBook(player);
+            TaskManager.removePlayersTaskBook(player, true);
         }
     }
 

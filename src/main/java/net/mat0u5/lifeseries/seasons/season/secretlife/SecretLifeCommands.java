@@ -5,19 +5,15 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.mat0u5.lifeseries.command.manager.Command;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
-import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
-import net.mat0u5.lifeseries.utils.other.IdentifierHelper;
 import net.mat0u5.lifeseries.utils.other.OtherUtils;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
 import net.mat0u5.lifeseries.utils.player.PermissionManager;
-import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.mat0u5.lifeseries.utils.world.AnimationUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -241,13 +237,14 @@ public class SecretLifeCommands extends Command {
         if (type.equalsIgnoreCase("red")) taskType = TaskTypes.RED;
 
         task = task.replaceAll("\\\\n","\n");
+        TaskManager.removeFromTasksChosenFor(targets);
 
         for (ServerPlayer player : targets) {
             TaskManager.preAssignedTasks.put(player.getUUID(), new Task(task, taskType));
 
             boolean inSession = TaskManager.tasksChosen && !currentSession.statusFinished();
-            if (TaskManager.removePlayersTaskBook(player) || inSession) {
-                TaskManager.assignRandomTaskToPlayer(player, taskType, false);
+            if (TaskManager.removePlayersTaskBook(player, true) || inSession) {
+                TaskManager.assignRandomTaskToPlayer(player, taskType);
                 AnimationUtils.playSecretLifeTotemAnimation(player, taskType == TaskTypes.RED);
                 if (targets.size() == 1) {
                     OtherUtils.sendCommandFeedback(source, TextUtils.format("Changed {}'s task", player));
@@ -280,7 +277,7 @@ public class SecretLifeCommands extends Command {
         if (!TaskManager.checkSecretLifePositions()) return -1;
         List<ServerPlayer> affected = new ArrayList<>();
         for (ServerPlayer player : targets) {
-            if (TaskManager.removePlayersTaskBook(player)) {
+            if (TaskManager.removePlayersTaskBook(player, true)) {
                 affected.add(player);
             }
         }
