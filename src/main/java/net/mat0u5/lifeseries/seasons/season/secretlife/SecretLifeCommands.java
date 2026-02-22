@@ -245,6 +245,7 @@ public class SecretLifeCommands extends Command {
 
             boolean inSession = TaskManager.tasksChosen && !currentSession.statusFinished();
             if (TaskManager.removePlayersTaskBook(player, true) || inSession) {
+                TaskManager.removeFromTasksChosenFor(player);
                 TaskManager.assignRandomTaskToPlayer(player, taskType);
                 AnimationUtils.playSecretLifeTotemAnimation(player, taskType == TaskTypes.RED);
                 if (targets.size() == 1) {

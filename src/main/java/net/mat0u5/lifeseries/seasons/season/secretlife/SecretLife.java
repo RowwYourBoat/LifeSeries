@@ -101,7 +101,6 @@ public class SecretLife extends Season {
 
     @Override
     public void reload() {
-        super.reload();
         MAX_HEALTH = seasonConfig.MAX_PLAYER_HEALTH.get();
         MAX_KILL_HEALTH = SecretLifeConfig.MAX_PLAYER_KILL_HEALTH.get();
         TaskManager.EASY_SUCCESS = SecretLifeConfig.TASK_HEALTH_EASY_PASS.get();

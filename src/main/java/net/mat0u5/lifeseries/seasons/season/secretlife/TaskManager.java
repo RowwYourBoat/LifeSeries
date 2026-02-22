@@ -10,7 +10,6 @@ import net.mat0u5.lifeseries.utils.other.IdentifierHelper;
 import net.mat0u5.lifeseries.utils.other.TaskScheduler;
 import net.mat0u5.lifeseries.utils.other.TextUtils;
 import net.mat0u5.lifeseries.utils.other.Time;
-import net.mat0u5.lifeseries.utils.other.*;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.mat0u5.lifeseries.utils.world.AnimationUtils;
 import net.mat0u5.lifeseries.utils.world.DatapackIntegration;
@@ -42,9 +41,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.server.network.FilteredText;
 *///?}
 //? if >= 1.20.5 {
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.server.network.Filterable;
-import net.minecraft.world.item.component.WrittenBookContent;
+
 //?}
 //? if < 1.20.5
 //import java.util.stream.Stream;
@@ -172,9 +169,9 @@ public class TaskManager {
     public static ItemStack getTaskBook(ServerPlayer player, Task task) {
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         //? if < 1.20.5 {
-        /*List<FilteredText> lines = task.getBookLines(player);
+        /*List<FilteredText> lines = task.getBookLines(player1);
         book.addTagElement("author", StringTag.valueOf(ModifiableText.SECRETLIFE_TASK_AUTHOR.getString()));
-        book.addTagElement("title", StringTag.valueOf(ModifiableText.SECRETLIFE_TASK_NAME.getString(player)));
+        book.addTagElement("title", StringTag.valueOf(ModifiableText.SECRETLIFE_TASK_NAME.getString(player1)));
         ListTag listTag = new ListTag();
         Stream<StringTag> stream = lines.stream().map((filteredTextx) -> StringTag.valueOf(filteredTextx.filteredOrEmpty()));
         Objects.requireNonNull(listTag);
@@ -497,15 +494,12 @@ public class TaskManager {
             //?}
             AnimationUtils.spawnFireworkBall(server.overworld(), centerPos, 40, 0.3, new Vector3f(0, 1, 0));
             if (type == TaskTypes.EASY) {
-                showHeartTitle(player, EASY_SUCCESS);
                 addHealthThenItems(player, EASY_SUCCESS, type);
             }
             if (type == TaskTypes.HARD) {
-                showHeartTitle(player, HARD_SUCCESS);
                 addHealthThenItems(player, HARD_SUCCESS, type);
             }
             if (type == TaskTypes.RED) {
-                showHeartTitle(player, RED_SUCCESS);
                 addHealthThenItems(player, RED_SUCCESS, type);
             }
         });
@@ -613,6 +607,17 @@ public class TaskManager {
         });
         DatapackIntegration.EVENT_TASK_FAIL.trigger(new DatapackIntegration.Events.MacroEntry("Player", player.getScoreboardName()));
         chooseNewTaskForPlayerIfNecessary(player);
+    }
+
+    public static void assignNewTaskToPair(ServerPlayer player1, ServerPlayer player2) {
+        removePlayersTaskBook(player1, true);
+        removeFromTasksChosenFor(player1);
+
+        if (player1.ls$isDead()) return;
+        TaskTypes taskType = player1.ls$isOnLastLife(false) ? TaskTypes.RED : TaskTypes.EASY;
+        AnimationUtils.playSecretLifeTotemAnimation(player1, taskType == TaskTypes.RED);
+        AnimationUtils.playSecretLifeTotemAnimation(player2, taskType == TaskTypes.RED);
+        TaskManager.assignRandomTaskToPlayer(player1, taskType);
     }
 
     public static void chooseNewTaskForPlayerIfNecessary(ServerPlayer player) {

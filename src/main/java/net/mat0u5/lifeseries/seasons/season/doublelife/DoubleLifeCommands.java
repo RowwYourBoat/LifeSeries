@@ -1,6 +1,7 @@
 package net.mat0u5.lifeseries.seasons.season.doublelife;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import net.mat0u5.lifeseries.command.manager.Command;
 import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.seasons.season.Seasons;
@@ -45,11 +46,14 @@ public class DoubleLifeCommands extends Command {
                 .then(literal("set")
                         .then(argument("player", EntityArgument.player())
                                 .then(argument("soulmate", EntityArgument.player())
+                                    .then(argument("assignNewTask", BoolArgumentType.bool())
                                         .executes(context -> setSoulmate(
-                                                context.getSource(),
-                                                EntityArgument.getPlayer(context, "player"),
-                                                EntityArgument.getPlayer(context, "soulmate")
-                                        ))
+                                            context.getSource(),
+                                            EntityArgument.getPlayer(context, "player"),
+                                            EntityArgument.getPlayer(context, "soulmate"),
+                                            BoolArgumentType.getBool(context, "assignNewTask")
+                                        )
+                                    ))
                                 )
                         )
                 )
@@ -176,7 +180,7 @@ public class DoubleLifeCommands extends Command {
         return 1;
     }
 
-    public int setSoulmate(CommandSourceStack source, ServerPlayer player, ServerPlayer soulmate) {
+    public int setSoulmate(CommandSourceStack source, ServerPlayer player, ServerPlayer soulmate, boolean shouldAssignNewTask) {
         if (checkBanned(source)) return -1;
         if (player == null) return -1;
 
@@ -192,7 +196,7 @@ public class DoubleLifeCommands extends Command {
             return -1;
         }
 
-        season.setSoulmate(player,soulmate);
+        season.setSoulmate(player, soulmate, shouldAssignNewTask);
         season.saveSoulmates();
 
         OtherUtils.sendCommandFeedback(source, ModifiableText.DOUBLELIFE_SOULMATE_SET.get(player, soulmate));

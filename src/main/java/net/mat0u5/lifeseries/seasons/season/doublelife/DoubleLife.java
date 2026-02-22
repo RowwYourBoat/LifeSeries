@@ -1,6 +1,7 @@
 package net.mat0u5.lifeseries.seasons.season.doublelife;
 
 import net.mat0u5.lifeseries.config.ConfigManager;
+import net.mat0u5.lifeseries.config.ModifiableText;
 import net.mat0u5.lifeseries.config.StringListConfig;
 import net.mat0u5.lifeseries.seasons.boogeyman.BoogeymanManager;
 import net.mat0u5.lifeseries.seasons.season.Season;
@@ -8,6 +9,7 @@ import net.mat0u5.lifeseries.seasons.season.Seasons;
 import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLife;
 import net.mat0u5.lifeseries.seasons.season.secretlife.SecretLifeConfig;
 import net.mat0u5.lifeseries.seasons.season.secretlife.TaskManager;
+import net.mat0u5.lifeseries.seasons.session.SessionAction;
 import net.mat0u5.lifeseries.seasons.session.SessionTranscript;
 import net.mat0u5.lifeseries.seasons.subin.SubInManager;
 import net.mat0u5.lifeseries.utils.interfaces.IHungerManager;
@@ -15,7 +17,6 @@ import net.mat0u5.lifeseries.utils.other.*;
 import net.mat0u5.lifeseries.utils.player.PlayerUtils;
 import net.mat0u5.lifeseries.utils.world.ItemSpawner;
 import net.mat0u5.lifeseries.utils.world.LevelUtils;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -42,7 +43,7 @@ import static net.mat0u5.lifeseries.Main.*;
 //? if <= 1.21.9
 //import net.minecraft.world.level.GameRules;
 //? if > 1.21.9
-import net.minecraft.world.level.gamerules.GameRules;
+
 
 public class DoubleLife extends Season {
     public static final ResourceKey<DamageType> SOULMATE_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE,  IdentifierHelper.mod("soulmate"));
@@ -137,7 +138,7 @@ public class DoubleLife extends Season {
     @Override
     public void addSessionActions() {
         super.addSessionActions();
-        currentSession.addSessionAction(new SessionAction(Time.minutes(1), ModifiableText.SESSION_ACTION_ASSIGN_SOULMATES.getString()) {
+        currentSession.addSessionAction(new SessionAction(Time.minutes(5), ModifiableText.SESSION_ACTION_ASSIGN_SOULMATES.getString()) {
             @Override
             public void trigger() {
                 rollSoulmates();
@@ -330,12 +331,17 @@ public class DoubleLife extends Season {
         soulmates.put(player2UUID, player1UUID);
         updateOrderedSoulmates();
     }
-    public void setSoulmate(ServerPlayer player1, ServerPlayer player2) {
+    public void setSoulmate(ServerPlayer player1, ServerPlayer player2, boolean shouldAssignNewTask) {
         soulmates.put(player1.getUUID(), player2.getUUID());
         soulmates.put(player2.getUUID(), player1.getUUID());
         SessionTranscript.soulmate(player1, player2);
         syncPlayers(player1, player2);
         updateOrderedSoulmates();
+
+        boolean inSession = TaskManager.tasksChosen && !currentSession.statusFinished();
+        if (inSession && shouldAssignNewTask) {
+            TaskManager.assignNewTaskToPair(player1, player2);
+        }
     }
 
     public void resetSoulmate(ServerPlayer player) {
@@ -430,7 +436,7 @@ public class DoubleLife extends Season {
             ServerPlayer player1 = PlayerUtils.getPlayer(entry.getKey());
             ServerPlayer player2 = PlayerUtils.getPlayer(entry.getValue());
             if (player1 != null && player2 != null && playersToRoll.contains(player1) &&  playersToRoll.contains(player2)) {
-                setSoulmate(player1,player2);
+                setSoulmate(player1, player2, false);
             }
             else {
                 setOfflineSoulmate(entry.getKey(),entry.getValue());
@@ -452,7 +458,7 @@ public class DoubleLife extends Season {
             }
             if (player2 != null) {
                 playersToRoll.remove(player2);
-                setSoulmate(player1,player2);
+                setSoulmate(player1, player2, false);
             }
         }
 
