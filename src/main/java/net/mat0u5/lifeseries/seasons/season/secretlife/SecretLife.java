@@ -301,8 +301,8 @@ public class SecretLife extends Season {
 
     @Override
     public void onPlayerJoin(ServerPlayer player) {
-        if (TaskManager.tasksChosen && !TaskManager.tasksChosenFor.contains(player.getUUID())) {
-            PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§cRemember to give {} a task!", player.getName()));
+        if (TaskManager.tasksChosen && !TaskManager.tasksChosenFor.contains(player.getUUID()) && !TaskManager.submittedOrFailed.contains(player.getUUID())) {
+            PlayerUtils.broadcastMessageToAdmins(TextUtils.format("§cRemember to assign a task to §f{}!", player.getName()));
         }
     }
 

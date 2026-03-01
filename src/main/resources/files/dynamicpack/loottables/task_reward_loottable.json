@@ -233,7 +233,7 @@
               "components": {
                 "minecraft:stored_enchantments": {
                   "levels": {
-                    "minecraft:protection": 3
+                    "minecraft:protection": 1
                   }
                 }
               }
